@@ -1,5 +1,5 @@
 // src/pages/HomePage.tsx
-import Navbar from '../components/navbar'
+import Navbar from '../components/Navbar'
 import { useEffect } from 'react'
 import { checkSupabaseConnection } from '../lib/supabase'
 
@@ -18,7 +18,7 @@ const HomePage = () => {
             <h1 className="text-5xl font-bold">Grey-Bruce Plumbing</h1>
             <p className="py-6">Professional plumbing services for Grey and Bruce counties. Residential and commercial solutions for all your plumbing needs.</p>
             <button className="btn btn-primary">Get Started</button>
-          </div>
+          </div>    
         </div>
       </div>
     </div>
