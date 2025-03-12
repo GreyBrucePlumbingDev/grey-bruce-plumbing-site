@@ -1,5 +1,4 @@
 // src/pages/HomePage.tsx
-import Navbar from '../components/Navbar'
 import { useEffect } from 'react'
 import { checkSupabaseConnection } from '../lib/supabase'
 
@@ -11,7 +10,6 @@ const HomePage = () => {
 
   return (
     <div>
-      <Navbar />
       <div className="hero min-h-screen bg-base-200">
         <div className="hero-content text-center">
           <div className="max-w-md">
