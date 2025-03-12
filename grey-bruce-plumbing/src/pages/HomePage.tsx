@@ -1,6 +1,14 @@
 // src/pages/HomePage.tsx
 import { useEffect } from 'react'
 import { checkSupabaseConnection } from '../lib/supabase'
+import HeroSection from '../components/sections/HeroSection';
+import PopularServices from '../components/sections/PopularServices';
+import AboutUsPreview from '../components/sections/AboutUsPreview';
+import Testimonials from '../components/sections/Testimonials';
+import BlogPreview from '../components/sections/BlogPreview';
+import EmergencyCallout from '../components/sections/EmergencyCallout';
+import ServiceAreaMap from '../components/sections/ServiceAreaMap';
+import ContactUs from '../components/sections/ContactUs';
 
 const HomePage = () => {
   useEffect(() => {
@@ -10,15 +18,14 @@ const HomePage = () => {
 
   return (
     <div>
-      <div className="hero min-h-screen bg-base-200">
-        <div className="hero-content text-center">
-          <div className="max-w-md">
-            <h1 className="text-5xl font-bold">Grey-Bruce Plumbing</h1>
-            <p className="py-6">Professional plumbing services for Grey and Bruce counties. Residential and commercial solutions for all your plumbing needs.</p>
-            <button className="btn btn-primary">Get Started</button>
-          </div>    
-        </div>
-      </div>
+      <HeroSection />
+      <PopularServices />
+      <AboutUsPreview />
+      <Testimonials />
+      <BlogPreview />
+      <EmergencyCallout />
+      <ServiceAreaMap />
+      <ContactUs />
     </div>
   )
 }
