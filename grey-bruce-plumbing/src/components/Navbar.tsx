@@ -3,7 +3,6 @@ import { useState } from 'react';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isServiceAreaOpen, setIsServiceAreaOpen] = useState(false);
   
   // Active section tracking (in a real implementation, this would update based on scroll position)
   const [activeSection, setActiveSection] = useState('home');
