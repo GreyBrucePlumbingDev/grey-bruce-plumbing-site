@@ -38,12 +38,12 @@ const Navbar = () => {
           </div>
           {/* Logo */}
           <a className="btn btn-ghost ml-1">
-            <img src="../src/assets/logo.png" alt="Grey-Bruce Plumbing" className="h-20" />
+            <img src="../src/assets/logo.png" alt="Grey-Bruce Plumbing" className="h-8 sm:h-10 md:h-12 lg:h-16 xl:h-20" />
           </a>
         </div>
         
         {/* desktop navigation */}
-        <div className="navbar-center hidden lg:flex justify-center flex-grow mr-20">
+        <div className="navbar-center hidden lg:flex justify-center flex-grow mr-25">
           <ul className="menu menu-horizontal px-1">
             <li>
               <a 
@@ -98,8 +98,8 @@ const Navbar = () => {
         
         {/* Contact information and CTA buttons */}
         <div className="navbar-end flex items-center">
-          <div className="hidden md:flex items-center text-right md:text-left mr-2 lg:mr-4">
-            <span className="text-sm font-medium mr-7">(555) 123-4567</span>
+          <div className="hidden md:flex flex-col items-end mr-2 lg:mr-4">
+            <span className="text-sm font-medium">(555) 123-4567</span>
             <span className="text-xs">24/7 service: (555) 999-8888</span>
           </div>
           
