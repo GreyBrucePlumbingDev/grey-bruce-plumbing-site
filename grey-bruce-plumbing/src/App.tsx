@@ -15,12 +15,12 @@ function App() {
         <Route path="/" element={<MainLayout />}>
 
         {/* define routes and access points */}
-          <Route index element={<HomePage />} />
-          <Route path="about" element={<AboutPage />} />
+        <Route index element={<HomePage />} />
+        <Route path="about" element={<AboutPage />} />
 
-          {/*<Route path="blog" element={<BlogPage />} />
-          
-          {/* Add more routes as needed */}
+        {/*<Route path="blog" element={<BlogPage />} />
+        {/* Add more routes as needed */}
+        
         </Route>
       </Routes>
     </BrowserRouter>
