@@ -1,5 +1,5 @@
 // src/components/PopularServices.tsx
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 interface ServiceProps {
@@ -183,7 +183,7 @@ const PopularServices = () => {
           
           {/* Service cards */}
           <div className="flex justify-center items-stretch gap-4 transition-all duration-500 ease-in-out py-4">
-            {visibleServices().map((service, index) => {
+            {visibleServices().map((service) => {
               // Set position classes
               let positionClasses = "";
               

@@ -1,5 +1,5 @@
 // src/components/HeroSection.tsx
-import { useState } from 'react';
+//import { useState } from 'react';
 
 const HeroSection = () => {
   const scrollToSection = (sectionId: string) => {
