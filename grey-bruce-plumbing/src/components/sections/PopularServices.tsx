@@ -1,251 +1,249 @@
-// src/components/PopularServices.tsx
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, TouchEvent } from 'react';
+import { FaHome, FaBuilding, FaExclamationTriangle, FaWater, FaTint, FaShieldAlt, FaHeadset } from 'react-icons/fa';
+import { FaArrowUpFromWaterPump } from "react-icons/fa6";
 import { Link } from 'react-router-dom';
 
-interface ServiceProps {
-  id: string;
+interface ServiceCardProps {
   title: string;
   description: string;
-  icon: string;
-  link: string;
+  icon: React.ReactNode;
+  url: string;
+  isActive: boolean;
 }
 
-const PopularServices = () => {
-  const services: ServiceProps[] = [
+const ServiceCard: React.FC<ServiceCardProps> = ({ title, description, icon, url, isActive }) => {
+  return (
+    <Link to={url} className="block">
+      <div 
+        className={`
+          relative flex flex-col bg-white rounded-lg p-6 transition-all duration-300
+          min-w-[280px] max-w-[280px] h-[200px]
+          ${isActive 
+            ? 'border-2 border-[#7ac144] shadow-lg translate-y-2' 
+            : 'border border-gray-200'
+          }
+        `}
+      >
+        <div className="text-[#152f59] text-2xl mb-2">
+          {icon}
+        </div>
+        <h3 className="text-[#152f59] font-bold text-lg mb-2">{title}</h3>
+        <p className="text-gray-600 text-sm">{description}</p>
+      </div>
+    </Link>
+  );
+};
+
+const PopularServices: React.FC = () => {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [direction, setDirection] = useState<'left' | 'right' | ''>('');
+  const [isMobile, setIsMobile] = useState(false);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const carouselRef = useRef<HTMLDivElement>(null);
+
+  // Minimum swipe distance threshold (in px)
+  const minSwipeDistance = 50;
+
+  useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    // Check on initial render
+    checkIsMobile();
+
+    // Add event listener for window resize
+    window.addEventListener('resize', checkIsMobile);
+
+    // Clean up
+    return () => window.removeEventListener('resize', checkIsMobile);
+  }, []);
+
+  const services = [
     {
-      id: 'residential',
-      title: 'Residential Services',
-      description: 'Complete plumbing solutions for your home, from repairs to renovations.',
-      icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6',
-      link: '/services/residential'
+      title: "Residential Services",
+      description: "Complete plumbing solutions for your home",
+      icon: <FaHome />,
+      url: "/services/residential"
     },
     {
-      id: 'commercial',
-      title: 'Commercial Services',
-      description: 'Reliable plumbing services for businesses with minimal disruption.',
-      icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
-      link: '/services/commercial'
+      title: "Commercial Services",
+      description: "Professional plumbing for businesses",
+      icon: <FaBuilding />,
+      url: "/services/commercial"
     },
     {
-      id: 'emergency',
-      title: 'Emergency Services',
-      description: '24/7 rapid response for all your plumbing emergencies.',
-      icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
-      link: '/services/emergency'
+      title: "Emergency Services",
+      description: "24/7 urgent plumbing assistance",
+      icon: <FaExclamationTriangle />,
+      url: "/services/emergency"
     },
     {
-      id: 'drain',
-      title: 'Drain Services',
-      description: 'Professional drain cleaning, repair and maintenance services.',
-      icon: 'M19 11V9a2 2 0 00-2-2H7a2 2 0 00-2 2v6a2 2 0 002 2h8m-8-5v5a2 2 0 002 2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 001.414 0L21 19.414A1 1 0 0021 18V9a2 2 0 00-2-2H5a2 2 0 00-2 2v5',
-      link: '/services/drain'
+      title: "Drain Services",
+      description: "Clearing and maintenance for all drains",
+      icon: <FaWater />,
+      url: "/services/drain"
     },
     {
-      id: 'water',
-      title: 'Water Treatment',
-      description: 'Clean, safe water solutions for your home or business.',
-      icon: 'M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12',
-      link: '/services/water-treatment'
+      title: "Water Treatment",
+      description: "Clean, safe water solutions for your property",
+      icon: <FaTint />,
+      url: "/services/water-treatment"
     },
     {
-      id: 'well',
-      title: 'Well Pump Services',
-      description: 'Installation, maintenance and repair for all well pump systems.',
-      icon: 'M5 13l4 4L19 7',
-      link: '/services/well-pump'
+      title: "Well Pump Services",
+      description: "Installation and repair of well pump systems",
+      icon: <FaArrowUpFromWaterPump />,
+      url: "/services/well-pump"
     },
     {
-      id: 'backflow',
-      title: 'Backflow Prevention',
-      description: 'Protect your water supply with our backflow prevention services.',
-      icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
-      link: '/services/backflow'
+      title: "Backflow Prevention",
+      description: "Protect your water supply from contamination",
+      icon: <FaShieldAlt />,
+      url: "/services/backflow"
     },
     {
-      id: 'support',
-      title: 'Support & Consultation',
-      description: 'Expert plumbing advice and planning for your projects.',
-      icon: 'M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z',
-      link: '/services/consultation'
+      title: "Support & Consultation",
+      description: "Expert advice for all plumbing matters",
+      icon: <FaHeadset />,
+      url: "/services/consultation"
     }
   ];
 
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
-  
-  // Handles changing to next slide
-  const nextSlide = () => {
-    setCurrentIndex((prevIndex) => 
-      prevIndex === services.length - 3 ? 0 : prevIndex + 1
+  const moveLeft = () => {
+    setDirection('left');
+    setActiveIndex((prevIndex) => 
+      prevIndex === 0 ? services.length - 1 : prevIndex - 1
     );
   };
 
-  // Handles changing to previous slide
-  const prevSlide = () => {
-    setCurrentIndex((prevIndex) => 
-      prevIndex === 0 ? services.length - 3 : prevIndex - 1
+  const moveRight = () => {
+    setDirection('right');
+    setActiveIndex((prevIndex) => 
+      (prevIndex + 1) % services.length
     );
   };
 
-  // Go to specific slide when indicator dot is clicked
-  const goToSlide = (index: number) => {
-    if (index + 2 < services.length) {
-      setCurrentIndex(index);
-    } else {
-      // Handle edge case for last slides
-      setCurrentIndex(services.length - 3);
-    }
-  };
-
-  // Touch handlers for mobile swipe
-  const handleTouchStart = (e: React.TouchEvent) => {
+  // Touch event handlers
+  const onTouchStart = (e: TouchEvent) => {
+    setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
   };
 
-  const handleTouchMove = (e: React.TouchEvent) => {
+  const onTouchMove = (e: TouchEvent) => {
     setTouchEnd(e.targetTouches[0].clientX);
   };
 
-  const handleTouchEnd = () => {
+  const onTouchEnd = () => {
     if (!touchStart || !touchEnd) return;
     
     const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > 50;
-    const isRightSwipe = distance < -50;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
     
     if (isLeftSwipe) {
-      nextSlide();
+      moveRight();
     } else if (isRightSwipe) {
-      prevSlide();
+      moveLeft();
     }
-    
-    setTouchStart(null);
-    setTouchEnd(null);
   };
 
-  // Autoscroll carousel
-  useEffect(() => {
-    const interval = setInterval(() => {
-      nextSlide();
-    }, 5000);
+  const getVisibleCards = () => {
+    const visibleCount = isMobile ? 1 : 3;
+    const halfVisible = isMobile ? 0 : 0.5;
     
-    return () => clearInterval(interval);
-  }, [currentIndex]);
-
-  // Visible cards include current and surrounding ones
-  const visibleServices = () => {
-    const result = [];
-    // Current visible cards (including partial ones)
-    for (let i = 0; i < 4; i++) {
-      const index = (currentIndex + i) % services.length;
-      result.push({
-        ...services[index],
-        position: i
-      });
+    // Calculate which indices to show
+    let indices = [];
+    const totalVisible = Math.floor(visibleCount + (halfVisible * 2));
+    const halfTotal = Math.floor(totalVisible / 2);
+    
+    for (let i = -halfTotal; i <= halfTotal; i++) {
+      let index = (activeIndex + i + services.length) % services.length;
+      indices.push(index);
     }
-    return result;
+    
+    return indices.map((index) => (
+      <div 
+        key={index} 
+        className={`
+          transition-all duration-300 px-2
+          ${isMobile ? 'w-full flex justify-center' : Math.abs(indices.indexOf(index) - halfTotal) <= 0.5 ? 'w-full' : 'w-1/4'}
+        `}
+      >
+        <ServiceCard
+          title={services[index].title}
+          description={services[index].description}
+          icon={services[index].icon}
+          url={services[index].url}
+          isActive={index === activeIndex}
+        />
+      </div>
+    ));
   };
 
   return (
-    <div id="services" className="py-16 bg-base-100">
+    <div id="services" className="py-12 bg-gray-50">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-[#152f59]">
-          Services We Offer
-        </h2>
+        <h2 className="text-4xl font-bold text-center text-[#152f59] mb-12">Services We Offer</h2>
         
-        <div 
-          className="relative overflow-hidden"
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-        >
-          {/* Carousel controls */}
+        <div className="relative px-8 md:px-12 mx-auto max-w-6xl">
+          {/* Left Arrow Button */}
           <button 
-            onClick={prevSlide}
-            className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/80 hover:bg-white rounded-full p-2 shadow-md"
-            aria-label="Previous service"
+            onClick={moveLeft}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full shadow-md p-3 text-[#152f59] hover:bg-[#7ac144] hover:text-white transition-colors duration-300"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[#152f59]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
           
-          <button 
-            onClick={nextSlide}
-            className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white/80 hover:bg-white rounded-full p-2 shadow-md"
-            aria-label="Next service"
+          {/* Cards Container */}
+          <div 
+            className="overflow-hidden pb-8"
+            ref={carouselRef}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[#152f59]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div 
+              className={`
+                flex transition-transform duration-300 ease-in-out
+                ${isMobile ? 'justify-center' : ''}
+                ${direction === 'left' ? 'animate-slide-left' : direction === 'right' ? 'animate-slide-right' : ''}
+              `}
+            >
+              {getVisibleCards()}
+            </div>
+          </div>
+          
+          {/* Right Arrow Button */}
+          <button 
+            onClick={moveRight}
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full shadow-md p-3 text-[#152f59] hover:bg-[#7ac144] hover:text-white transition-colors duration-300"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
-          
-          {/* Service cards */}
-          <div className="flex justify-center items-stretch gap-4 transition-all duration-500 ease-in-out py-4">
-            {visibleServices().map((service) => {
-              // Set position classes
-              let positionClasses = "";
-              
-              if (service.position === 0) {
-                // First card (partial)
-                positionClasses = "opacity-70 translate-x-1/2 hidden md:block";
-              } else if (service.position === 3) {
-                // Last card (partial)
-                positionClasses = "opacity-70 -translate-x-1/2 hidden md:block";
-              } else {
-                // Full cards
-                positionClasses = "opacity-100 z-10";
-                
-                // Selected card
-                if (service.position === 1) {
-                  positionClasses += " transform -translate-y-2 border-2 border-[#7ac144] shadow-lg";
-                }
-              }
-              
-              return (
-                <Link 
-                  to={service.link}
-                  key={service.id}
-                  className={`card bg-base-100 shadow hover:shadow-md border transition-all duration-300 ease-in-out flex-shrink-0 ${positionClasses} ${service.position === 1 ? 'w-full md:w-1/3 lg:w-1/4' : 'w-full md:w-1/4 lg:w-1/5'}`}
-                >
-                  <div className="card-body">
-                    <svg 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      className="h-8 w-8 text-[#7ac144] mb-3" 
-                      fill="none" 
-                      viewBox="0 0 24 24" 
-                      stroke="currentColor"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={service.icon} />
-                    </svg>
-                    <h3 className="card-title text-lg font-bold text-[#152f59]">{service.title}</h3>
-                    <p className="text-gray-600 text-sm">{service.description}</p>
-                    <div className="card-actions justify-end mt-4">
-                      <div className="text-[#7ac144] font-medium text-sm flex items-center">
-                        Learn more
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-          
-          {/* Indicator dots */}
-          <div className="flex justify-center mt-8 gap-2">
-            {services.slice(0, services.length - 2).map((_, index) => (
-              <button
-                key={index}
-                onClick={() => goToSlide(index)}
-                className={`w-3 h-3 rounded-full transition-all duration-300 ${currentIndex === index ? 'bg-[#7ac144] w-6' : 'bg-gray-300 hover:bg-gray-400'}`}
-                aria-label={`Go to slide ${index + 1}`}
-              />
-            ))}
-          </div>
+        </div>
+        
+        {/* Dots Navigation */}
+        <div className="flex justify-center mt-8">
+          {services.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => {
+                setDirection(index > activeIndex ? 'right' : 'left');
+                setActiveIndex(index);
+              }}
+              className={`
+                mx-1 h-3 w-3 rounded-full transition-all duration-300
+                ${index === activeIndex ? 'bg-[#7ac144] w-6' : 'bg-[#152f59] bg-opacity-30'}
+              `}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
         </div>
       </div>
     </div>
