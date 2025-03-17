@@ -1,12 +1,9 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import Container from './common/Container';
 import { FaFacebook, FaInstagram, FaTwitter, FaLinkedin, FaPhone, FaMapMarkerAlt } from 'react-icons/fa';
 import { useState } from 'react';
 
 const Footer = () => {
-    const [activeSection, setActiveSection] = useState('home');
-
     const scrollToSection = (sectionId: string) => {
         const element = document.getElementById(sectionId);
         if (element) {
@@ -17,7 +14,6 @@ const Footer = () => {
             top: offsetPosition,
             behavior: 'smooth',
             });
-            setActiveSection(sectionId);
         }
         };
 
