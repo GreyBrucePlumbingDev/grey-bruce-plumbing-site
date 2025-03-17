@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import Container from './common/Container';
 import { FaFacebook, FaInstagram, FaTwitter, FaLinkedin, FaPhone, FaMapMarkerAlt } from 'react-icons/fa';
-import { useState } from 'react';
 
 const Footer = () => {
     const scrollToSection = (sectionId: string) => {

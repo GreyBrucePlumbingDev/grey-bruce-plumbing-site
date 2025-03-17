@@ -1,5 +1,4 @@
 // src/components/Navbar.tsx
-import { useState, useEffect } from 'react';
 import Container from './common/Container';
 import { Link } from 'react-router-dom';
 

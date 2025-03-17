@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import { ServiceContent } from '../types/serviceTypes';
-import { getServiceBySlug } from '../services/supabaseService';
+import { ServiceContent } from '../types/ServiceTypes';
+//import { getServiceBySlug } from '../services/supabaseService';
 
 const ServicePage = () => {
   const { serviceSlug } = useParams<{ serviceSlug: string }>();
