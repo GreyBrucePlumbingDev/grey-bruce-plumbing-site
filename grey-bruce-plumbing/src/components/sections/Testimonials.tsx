@@ -67,7 +67,7 @@ const Testimonials: React.FC = () => {
   };
 
   return (
-    <div id="reviews" className="py-16 bg-white">
+    <div id="reviews" className="py-25 bg-white">
       <div className="container mx-auto px-4">
         <h2 className="text-4xl font-bold text-center text-[#152f59] mb-12">
           Why Customers Love Working With Us

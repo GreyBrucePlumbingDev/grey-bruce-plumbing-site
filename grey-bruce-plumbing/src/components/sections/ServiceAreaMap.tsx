@@ -40,7 +40,7 @@ const ServiceAreaMap: React.FC = () => {
           
           {/* Service Areas List - Right side */}
           <div className="lg:w-1/2">
-            <div className="bg-white rounded-lg shadow-md p-8 h-full">
+            <div className="bg-white rounded-lg shadow-md p-8 h-96 md:h-[500px] overflow-y-auto">
               <h3 className="text-2xl font-bold text-[#152f59] mb-6">
                 Communities We Serve
               </h3>

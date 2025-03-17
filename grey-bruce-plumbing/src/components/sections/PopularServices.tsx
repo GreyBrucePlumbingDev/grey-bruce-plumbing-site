@@ -167,7 +167,7 @@ const PopularServices: React.FC = () => {
       <div 
         key={index} 
         className={`
-          transition-all duration-300 px-2
+          transition-all duration-500 px-2
           ${isMobile ? 'w-full flex justify-center' : Math.abs(indices.indexOf(index) - halfTotal) <= 0.5 ? 'w-full' : 'w-1/4'}
         `}
       >
@@ -208,7 +208,7 @@ const PopularServices: React.FC = () => {
           >
             <div 
               className={`
-                flex transition-transform duration-300 ease-in-out
+                flex transition-transform duration-500 ease-in-out
                 ${isMobile ? 'justify-center' : ''}
                 ${direction === 'left' ? 'animate-slide-left' : direction === 'right' ? 'animate-slide-right' : ''}
               `}

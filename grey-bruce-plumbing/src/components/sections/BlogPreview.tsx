@@ -42,7 +42,7 @@ const BlogPreview: React.FC = () => {
                 {/* Image section (30%) */}
                 <div className="md:w-[30%] h-48 md:h-auto">
                   <img 
-                    src={post.imageUrl} 
+                    //src={post.imageUrl} 
                     alt={post.title}
                     className="w-full h-full object-cover"
                     // Fallback image in case the actual image doesn't load
