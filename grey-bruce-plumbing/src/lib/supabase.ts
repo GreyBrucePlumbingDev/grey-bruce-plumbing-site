@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string
 
 // check if supabase is connected
 export const checkSupabaseConnection = async () => {
@@ -20,6 +20,10 @@ export const checkSupabaseConnection = async () => {
         console.error('supabase connection error: ', err)
         return false
     }
+}
+
+if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error("Missing supabase environment variables")
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
