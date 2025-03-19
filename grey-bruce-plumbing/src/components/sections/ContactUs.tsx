@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { useSitewideSettings } from '../../hooks/useSitewideSettings';
 import { SitewideSettings } from '../../types/SitewideSettings';
 
