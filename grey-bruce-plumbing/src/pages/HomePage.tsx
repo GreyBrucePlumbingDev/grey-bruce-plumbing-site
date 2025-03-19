@@ -62,7 +62,7 @@ const HomePage = () => {
         </Container>
       </section>
 
-      <section className="py-12">
+      <section id='contact' className="py-12">
         <Container>
           <ContactUs />
         </Container>

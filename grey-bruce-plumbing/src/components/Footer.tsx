@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import Container from './common/Container';
 import { FaFacebook, FaInstagram, FaTwitter, FaLinkedin, FaPhone, FaMapMarkerAlt } from 'react-icons/fa';
+import { useSitewideSettings } from '../hooks/useSitewideSettings';
+import { SitewideSettings } from '../types/SitewideSettings';
 
 const Footer = () => {
     const scrollToSection = (sectionId: string) => {
@@ -14,7 +16,13 @@ const Footer = () => {
             behavior: 'smooth',
             });
         }
-        };
+    };
+
+    const { settings, loading } = useSitewideSettings() as { settings: SitewideSettings | null; loading: boolean };
+
+    if (loading) return (
+        <div>Loading...</div>
+    );
 
     return (
         <footer className="bg-[#152f59] text-white pt-12 pb-6">
@@ -23,10 +31,21 @@ const Footer = () => {
             {/* Column 1 - Logo & Subtitle */}
             <div className="lg:col-span-1">
                 <div className="mb-4">
-                <img src="/logo-light.png" alt="Company Logo" className="h-12" />
+                <Link to="/" className="btn btn-ghost ml-1">
+                    {settings?.company_logo_url ? (
+                        <img 
+                        src={settings.company_logo_url} 
+                        alt={settings.company_name || "Company Logo"} 
+                        className="h-8 sm:h-10 md:h-12 lg:h-16 xl:h-20" 
+                        />
+                    ) : (
+                        <div className="text-lg font-bold">{settings?.company_name || "Company Name"}</div>
+                    )}
+                </Link>
                 </div>
                 <p className="text-sm text-gray-300">
-                Trusted plumbers in the Owen Sound and surrounding areas
+                <br />
+                {settings?.footer_text}
                 </p>
             </div>
 
@@ -63,9 +82,9 @@ const Footer = () => {
                     </a>
                 </li>
                 <li>
-                    <Link to="/book" className="text-gray-300 hover:text-[#7ac144] transition-colors">
+                    <a href={settings?.booking_link} className="text-gray-300 hover:text-[#7ac144] transition-colors">
                     Book Now
-                    </Link>
+                    </a>
                 </li>
                 </ul>
             </div>
@@ -76,18 +95,18 @@ const Footer = () => {
                 <div className="space-y-4">
                 <p className="flex items-center text-gray-300">
                     <FaPhone className="mr-2 text-[#7ac144]" /> 
-                    <a href="tel:5551234567" className="hover:text-[#7ac144] transition-colors">
-                    (555) 123-4567
+                    <a href={settings?.phone_number} className="hover:text-[#7ac144] transition-colors">
+                    {settings?.phone_number}
                     </a>
                 </p>
                 <div>
-                    <h4 className="font-medium text-[#7ac144] mb-1">Owen Sound</h4>
+                    <h4 className="font-medium text-[#7ac144] mb-1">{settings?.address1_city}</h4>
                     <address className="not-italic text-gray-300 text-sm">
                     <p className="flex items-start">
                         <FaMapMarkerAlt className="mr-2 mt-1 text-[#7ac144]" />
                         <span>
-                        123 Main Street<br />
-                        Owen Sound, ON N4K 5T6
+                        {settings?.address1_line}<br />
+                        {settings?.address1_city}, {settings?.address1_province} {settings?.address1_postal_code}
                         </span>
                     </p>
                     </address>
@@ -97,22 +116,22 @@ const Footer = () => {
 
             {/* Column 4 - Contact (Second Location) */}
             <div>
-                <h3 className="text-lg font-semibold mb-4">Other Location</h3>
+                <h3 className="text-lg font-semibold mb-4">Other Locations</h3>
                 <div className="space-y-4">
                 <p className="flex items-center text-gray-300">
                     <FaPhone className="mr-2 text-[#7ac144]" /> 
-                    <a href="tel:5557654321" className="hover:text-[#7ac144] transition-colors">
-                    (555) 765-4321
+                    <a href={settings?.address2_phone} className="hover:text-[#7ac144] transition-colors">
+                    {settings?.address2_phone}
                     </a>
                 </p>
                 <div>
-                    <h4 className="font-medium text-[#7ac144] mb-1">Collingwood</h4>
+                    <h4 className="font-medium text-[#7ac144] mb-1">{settings?.address2_city}</h4>
                     <address className="not-italic text-gray-300 text-sm">
                     <p className="flex items-start">
                         <FaMapMarkerAlt className="mr-2 mt-1 text-[#7ac144]" />
                         <span>
-                        456 Water Street<br />
-                        Collingwood, ON L9Y 8H7
+                        {settings?.address2_line}<br />
+                        {settings?.address2_city}, {settings?.address2_province} {settings?.address2_postal_code}
                         </span>
                     </p>
                     </address>
@@ -124,7 +143,7 @@ const Footer = () => {
             {/* Bottom Section with Social & Copyright */}
             <div className="mt-12 pt-6 border-t border-gray-700 flex flex-col-reverse md:flex-row justify-between items-center">
             <p className="text-sm text-gray-400 mt-4 md:mt-0">
-                © {new Date().getFullYear()} Your Plumbing Company. All rights reserved.
+                © {new Date().getFullYear()} {settings?.company_name}. All rights reserved.
             </p>
             
             <div className="flex space-x-4">

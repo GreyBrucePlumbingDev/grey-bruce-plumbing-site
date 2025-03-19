@@ -1,6 +1,8 @@
 // src/components/Navbar.tsx
 import Container from './common/Container';
 import { Link } from 'react-router-dom';
+import { useSitewideSettings } from '../hooks/useSitewideSettings';
+import { SitewideSettings } from '../types/SitewideSettings';
 
 const Navbar = () => {
   const scrollToSection = (sectionId: string) => {
@@ -15,6 +17,23 @@ const Navbar = () => {
       });
     }
   };
+  const { settings, loading } = useSitewideSettings() as { settings: SitewideSettings | null; loading: boolean };
+
+  // Loading state with minimal placeholder to reduce layout shift
+  if (loading) return (
+    <div className='bg-base-100 sticky top-0 z-50 shadow-md'>
+      <Container>
+        <div className="navbar h-25">
+          <div className="navbar-start">
+            <div className="w-40 h-12 bg-gray-200 animate-pulse"></div>
+          </div>
+          <div className="navbar-end">
+            <div className="w-48 h-8 bg-gray-200 animate-pulse"></div>
+          </div>
+        </div>
+      </Container>
+    </div>
+  );
 
   return (
     <div className='bg-base-100 sticky top-0 z-50 shadow-md'>
@@ -39,9 +58,17 @@ const Navbar = () => {
               </ul>
               
             </div>
-            {/* Logo */}
+            {/* Logo - Now using settings.company_logo_url */}
             <Link to="/" className="btn btn-ghost ml-1">
-              <img src="../src/assets/logo.png" alt="Grey-Bruce Plumbing" className="h-8 sm:h-10 md:h-12 lg:h-16 xl:h-20" />
+              {settings?.company_logo_url ? (
+                <img 
+                  src={settings.company_logo_url} 
+                  alt={settings.company_name || "Company Logo"} 
+                  className="h-8 sm:h-10 md:h-12 lg:h-16 xl:h-20" 
+                />
+              ) : (
+                <div className="text-lg font-bold">{settings?.company_name || "Company Name"}</div>
+              )}
             </Link>
           </div>
           
@@ -99,17 +126,31 @@ const Navbar = () => {
             </ul>
           </div>
           
-          {/* Contact information and CTA buttons */}
+          {/* Contact information and CTA buttons - Now using settings data */}
           <div className="navbar-end flex items-center">
             <div className="hidden md:flex flex-col items-end mr-2 lg:mr-4">
-              <span className="text-sm font-medium">(555) 123-4567</span>
-              <span className="text-xs">24/7 service: (555) 999-8888</span>
+              {/* Main phone from settings */}
+              <span className="text-sm font-medium">{settings?.phone_number || "(555) 123-4567"}</span>
+              {/* Emergency phone from settings */}
+              <span className="text-xs">24/7 service: {settings?.emergency_phone || "(555) 999-8888"}</span>
             </div>
             
-            {/* Responsive CTA buttons */}
+            {/* Responsive CTA buttons - Book Now uses the booking_link from settings */}
             <div className="flex flex-col sm:flex-row">
-              <a className="btn btn-sm sm:btn-md bg-[#7ac144] hover:bg-[#6aad39] text-white border-none mr-1 mb-1 sm:mb-0 sm:mr-2 px-2 sm:px-4">Book Now</a>
-              <a className="btn btn-sm sm:btn-md bg-[#152f59] hover:bg-[#0e2040] text-white border-none px-2 sm:px-4">Contact Us</a>
+              <a 
+                href={settings?.booking_link || "#"} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="btn btn-sm sm:btn-md bg-[#7ac144] hover:bg-[#6aad39] text-white border-none mr-1 mb-1 sm:mb-0 sm:mr-2 px-2 sm:px-4"
+              >
+                Book Now
+              </a>
+              <a 
+                onClick={() => scrollToSection('contact')} 
+                className="btn btn-sm sm:btn-md bg-[#152f59] hover:bg-[#0e2040] text-white border-none px-2 sm:px-4"
+              >
+                Contact Us
+              </a>
             </div>
           </div>
         </div>

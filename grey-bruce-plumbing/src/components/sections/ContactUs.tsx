@@ -1,7 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useSitewideSettings } from '../../hooks/useSitewideSettings';
+import { SitewideSettings } from '../../types/SitewideSettings';
 
 const ContactUs: React.FC = () => {
+  const { settings, loading } = useSitewideSettings() as { settings: SitewideSettings | null; loading: boolean };
+
+  if (loading) return (
+    <div>Loading...</div>
+  );
+
   return (
     <div id="contact" className="py-16 bg-gray-50">
       <div className="container mx-auto px-4">
@@ -17,12 +25,12 @@ const ContactUs: React.FC = () => {
             
             {/* Right side - Button */}
             <div className="md:w-1/3 p-8 md:p-12 flex justify-center">
-              <Link 
-                to="/booking" 
+              <a 
+                href={settings?.booking_link || "/contact"} 
                 className="px-8 py-4 bg-[#7ac144] hover:bg-[#69a83a] text-white font-bold text-xl rounded-lg transition-colors duration-300 shadow-md whitespace-nowrap"
               >
                 Book Now
-              </Link>
+              </a>
             </div>
           </div>
         </div>
@@ -38,8 +46,8 @@ const ContactUs: React.FC = () => {
             </div>
             <h3 className="text-xl font-bold text-[#152f59] mb-2">Call Us</h3>
             <p className="text-gray-600 mb-4">Available 24/7 for emergency service</p>
-            <a href="tel:5551234567" className="text-xl font-bold text-[#7ac144] hover:underline">
-              (555) 123-4567
+            <a href={`tel:${settings?.emergency_phone}`} className="text-xl font-bold text-[#7ac144] hover:underline">
+              {settings?.emergency_phone}
             </a>
           </div>
           
@@ -52,8 +60,8 @@ const ContactUs: React.FC = () => {
             </div>
             <h3 className="text-xl font-bold text-[#152f59] mb-2">Email Us</h3>
             <p className="text-gray-600 mb-4">We'll respond within 24 hours</p>
-            <a href="mailto:info@plumberexperts.com" className="text-lg font-bold text-[#7ac144] hover:underline">
-              info@plumberexperts.com
+            <a href={`mailto:${settings?.email}`} className="text-lg font-bold text-[#7ac144] hover:underline">
+              {settings?.email}
             </a>
           </div>
           
@@ -66,10 +74,10 @@ const ContactUs: React.FC = () => {
               </svg>
             </div>
             <h3 className="text-xl font-bold text-[#152f59] mb-2">Visit Us</h3>
-            <p className="text-gray-600 mb-4">Monday - Friday: 8AM - 5PM</p>
+            <p className="text-gray-600 mb-4">{settings?.business_hours}</p>
             <address className="not-italic text-lg text-[#7ac144]">
-              123 Main Street<br />
-              Owen Sound, ON
+              {settings?.address1_line}<br />
+              {settings?.address1_city}, {settings?.address1_province}
             </address>
           </div>
         </div>
@@ -83,12 +91,12 @@ const ContactUs: React.FC = () => {
             <p className="text-gray-600 mb-6">
               Need an estimate or have a question? We'll get back to you ASAP.
             </p>
-            <Link 
-              to="/contact" 
+            <a 
+              href={settings?.booking_link || "/contact"} 
               className="px-6 py-3 bg-[#152f59] hover:bg-[#0e1f3a] text-white font-medium rounded-lg transition-colors duration-300"
             >
               Go to Contact Form
-            </Link>
+            </a>
           </div>
         </div>
         

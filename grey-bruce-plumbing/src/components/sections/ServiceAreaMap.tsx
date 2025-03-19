@@ -1,18 +1,54 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { supabase } from '../../lib/supabase';
+
+interface ServiceArea {
+  id: number;
+  name: string;
+  address?: string;
+  is_main_address: boolean;
+}
 
 const ServiceAreaMap: React.FC = () => {
-  // List of service areas
-  const serviceAreas = [
-    'Owen Sound',
-    'Georgian Bluffs',
-    'Chatsworth',
-    'Collingwood',
-    'Thornbury',
-    'Meaford',
-    'Saugeen Shores',
-    'Port Elgin',
-    'Southampton'
-  ];
+  const [serviceAreas, setServiceAreas] = useState<ServiceArea[]>([]);
+  const [mainAddress, setMainAddress] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchServiceAreas = async () => {
+      setLoading(true);
+      try {
+        // Get all service areas from Supabase
+        const { data, error } = await supabase
+          .from('service_areas')
+          .select('*')
+          .order('id', { ascending: true });
+
+        if (error) throw error;
+
+        if (data) {
+          // Find the main address
+          const mainAddressRecord = data.find(area => area.is_main_address === true);
+          setMainAddress(mainAddressRecord?.address || 'Owen Sound, ON');
+          
+          // Set service areas (excluding main address)
+          setServiceAreas(data.filter(area => !area.is_main_address));
+        }
+      } catch (err) {
+        console.error('Error fetching service areas:', err);
+        setError('Failed to load service areas. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchServiceAreas();
+  }, []);
+
+  // Function to create a Google Maps embed URL for the main address
+  const getMapEmbedUrl = (address: string) => {
+    return `https://www.google.com/maps?q=${encodeURIComponent(address)}&output=embed`;
+  };
 
   return (
     <div id="serviceArea" className="py-16 bg-gray-50">
@@ -25,16 +61,22 @@ const ServiceAreaMap: React.FC = () => {
           {/* Map Section - Left side */}
           <div className="lg:w-1/2">
             <div className="h-96 md:h-[500px] w-full rounded-lg overflow-hidden shadow-md">
-              <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d181139.35491623414!2d-81.0290367752998!3d44.56533336299504!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4d2677add6ad0c49%3A0xcd0a20e1c3df8cb0!2sOwen%20Sound%2C%20ON!5e0!3m2!1sen!2sca!4v1710616249012!5m2!1sen!2sca" 
-                width="100%" 
-                height="100%" 
-                style={{ border: 0 }} 
-                allowFullScreen={true} 
-                loading="lazy" 
-                referrerPolicy="no-referrer-when-downgrade"
-                title="Grey-Bruce Area Map"
-              ></iframe>
+              {loading ? (
+                <div className="h-full w-full flex items-center justify-center bg-gray-100">
+                  <div className="loading loading-spinner loading-lg text-[#7ac144]"></div>
+                </div>
+              ) : (
+                <iframe 
+                  src={getMapEmbedUrl(mainAddress)}
+                  width="100%" 
+                  height="100%" 
+                  style={{ border: 0 }} 
+                  allowFullScreen={true} 
+                  loading="lazy" 
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Service Area Map"
+                ></iframe>
+              )}
             </div>
           </div>
           
@@ -45,19 +87,33 @@ const ServiceAreaMap: React.FC = () => {
                 Communities We Serve
               </h3>
               
-              <div className="space-y-4">
-                {serviceAreas.map((area, index) => (
-                  <div 
-                    key={index} 
-                    className="flex items-center p-3 border-b border-gray-100 last:border-0"
-                  >
-                    <div className="w-6 h-6 rounded-full bg-[#7ac144] flex items-center justify-center mr-4">
-                      <span className="text-white font-bold text-sm">{index + 1}</span>
-                    </div>
-                    <span className="text-lg text-gray-700">{area}</span>
-                  </div>
-                ))}
-              </div>
+              {loading ? (
+                <div className="h-48 flex items-center justify-center">
+                  <div className="loading loading-spinner loading-lg text-[#7ac144]"></div>
+                </div>
+              ) : error ? (
+                <div className="p-4 bg-red-50 text-red-700 rounded-lg">
+                  {error}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {serviceAreas.length > 0 ? (
+                    serviceAreas.map((area, index) => (
+                      <div 
+                        key={area.id} 
+                        className="flex items-center p-3 border-b border-gray-100 last:border-0"
+                      >
+                        <div className="w-6 h-6 rounded-full bg-[#7ac144] flex items-center justify-center mr-4">
+                          <span className="text-white font-bold text-sm">{index + 1}</span>
+                        </div>
+                        <span className="text-lg text-gray-700">{area.name}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-500 italic">No service areas found.</p>
+                  )}
+                </div>
+              )}
               
               <div className="mt-8 bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <p className="text-gray-600">
