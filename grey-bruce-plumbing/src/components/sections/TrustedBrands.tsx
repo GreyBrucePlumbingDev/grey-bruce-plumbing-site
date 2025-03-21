@@ -1,23 +1,8 @@
 import React, { useState, useEffect } from 'react';
-
-interface Brand {
-  id: number;
-  name: string;
-  imageSrc: string;
-  altText: string;
-}
+import { useTrustedBrands } from '../../hooks/useTrustedBrands';
 
 const TrustedBrands: React.FC = () => {
-  // Placeholder brands data (to be replaced with Supabase data later)
-  const brands: Brand[] = [
-    { id: 1, name: "American Standard", imageSrc: "/placeholder/brands/american-standard.png", altText: "American Standard logo" },
-    { id: 2, name: "Kohler", imageSrc: "/placeholder/brands/kohler.png", altText: "Kohler logo" },
-    { id: 3, name: "Moen", imageSrc: "/placeholder/brands/moen.png", altText: "Moen logo" },
-    { id: 4, name: "Delta", imageSrc: "/placeholder/brands/delta.png", altText: "Delta logo" },
-    { id: 5, name: "Rheem", imageSrc: "/placeholder/brands/rheem.png", altText: "Rheem logo" },
-    { id: 6, name: "A.O. Smith", imageSrc: "/placeholder/brands/ao-smith.png", altText: "A.O. Smith logo" },
-  ];
-
+  const { brands, isLoading, error } = useTrustedBrands();
   const [activeIndex, setActiveIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -34,6 +19,37 @@ const TrustedBrands: React.FC = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // If loading or error, show appropriate message
+  if (isLoading) {
+    return (
+      <div className="py-12 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-8 text-[#152f59]">
+            Meet the people we are working with
+          </h2>
+          <div className="flex justify-center">
+            <div className="loader">Loading...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !brands || brands.length === 0) {
+    return (
+      <div className="py-12 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-8 text-[#152f59]">
+            Meet the people we are working with
+          </h2>
+          <div className="text-center text-gray-500">
+            {error ? 'Error loading trusted brands.' : 'No trusted brands found.'}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Create an array that's arranged for infinite scrolling
   const getCarouselItems = () => {
@@ -167,7 +183,7 @@ const TrustedBrands: React.FC = () => {
             >
               {carouselItems.map((brand, index) => (
                 <div 
-                  key={`${brand.id}-${index}`} 
+                  key={`${brand.id || index}-${index}`} 
                   className={`px-4 flex-shrink-0 ${
                     windowWidth >= 768 ? 'w-1/4' : 'w-1/2'
                   } flex flex-col items-center`}

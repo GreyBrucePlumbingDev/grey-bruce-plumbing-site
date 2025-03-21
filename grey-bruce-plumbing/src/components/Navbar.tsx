@@ -8,7 +8,7 @@ const Navbar = () => {
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
-      const offset = -15; // Adjust this value based on your navbar height
+      const offset = -40; // Adjust this value based on your navbar height
       const elementPosition = element.getBoundingClientRect().top + window.scrollY;
       const offsetPosition = elementPosition + offset;
       window.scrollTo({

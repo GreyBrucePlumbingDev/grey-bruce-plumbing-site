@@ -1,47 +1,21 @@
 import React, { useState } from 'react';
-
-interface TestimonialProps {
-  text: string;
-  name: string;
-  rating: number;
-}
+import { useTestimonials } from '../../hooks/useTestimonials';
 
 const Testimonials: React.FC = () => {
-  // Hardcoded testimonials (in the future, these will come from Supabase)
-  const testimonialsList: TestimonialProps[] = [
-    {
-      text: "The team was professional, prompt, and extremely knowledgeable. They fixed our water heater issue quickly and even took the time to explain what went wrong and how to prevent it in the future. Highly recommend their services!",
-      name: "Sarah Johnson",
-      rating: 5
-    },
-    {
-      text: "I had a plumbing emergency late at night and they responded within 30 minutes. The technician was courteous and resolved our issue without charging extra for the after-hours service. Great company with exceptional customer service.",
-      name: "Michael Rodriguez",
-      rating: 5
-    },
-    {
-      text: "I've used their services for both my home and business. Always reliable, always fair pricing. They installed a new water treatment system for us and the difference in water quality is remarkable. Thank you!",
-      name: "Jennifer Williams",
-      rating: 4
-    },
-    {
-      text: "When our backflow prevention device failed inspection, they came out the next day to replace it. The work was done correctly the first time and they even helped us with the paperwork for regulatory compliance. Very impressed!",
-      name: "Robert Chen",
-      rating: 5
-    }
-  ];
-
+  const { testimonials, loading, error } = useTestimonials();
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const nextTestimonial = () => {
+    if (!testimonials || testimonials.length === 0) return;
     setCurrentIndex((prevIndex) => 
-      (prevIndex + 1) % testimonialsList.length
+      (prevIndex + 1) % testimonials.length
     );
   };
 
   const prevTestimonial = () => {
+    if (!testimonials || testimonials.length === 0) return;
     setCurrentIndex((prevIndex) => 
-      prevIndex === 0 ? testimonialsList.length - 1 : prevIndex - 1
+      prevIndex === 0 ? testimonials.length - 1 : prevIndex - 1
     );
   };
 
@@ -65,6 +39,33 @@ const Testimonials: React.FC = () => {
     
     return stars;
   };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="py-25 bg-white">
+        <div className="container mx-auto px-4 flex justify-center items-center py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#7ac144]"></div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state or empty state
+  if (error || !testimonials || testimonials.length === 0) {
+    return (
+      <div className="py-25 bg-white">
+        <div className="container mx-auto px-4">
+          <h2 className="text-4xl font-bold text-center text-[#152f59] mb-6">
+            Why Customers Love Working With Us
+          </h2>
+          <p className="text-center text-gray-600">
+            {error ? "Couldn't load testimonials. Please try again later." : "No testimonials available at the moment."}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div id="reviews" className="py-25 bg-white">
@@ -95,22 +96,22 @@ const Testimonials: React.FC = () => {
               
               {/* Testimonial text */}
               <p className="text-gray-700 text-lg mb-6 italic relative z-10">
-                {testimonialsList[currentIndex].text}
+                {testimonials[currentIndex].description}
               </p>
               
               {/* Customer name */}
               <h3 className="text-[#152f59] font-bold text-xl mb-2">
-                {testimonialsList[currentIndex].name}
+                {testimonials[currentIndex].name}
               </h3>
               
               {/* Rating */}
               <div className="flex justify-center mb-2">
-                {renderStars(testimonialsList[currentIndex].rating)}
+                {renderStars(testimonials[currentIndex].rating)}
               </div>
               
               {/* Pagination indicator */}
               <div className="flex justify-center mt-6">
-                {testimonialsList.map((_, index) => (
+                {testimonials.map((_, index) => (
                   <button
                     key={index}
                     onClick={() => setCurrentIndex(index)}

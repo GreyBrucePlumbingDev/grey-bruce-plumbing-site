@@ -1,17 +1,87 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useSitewideSettings } from '../../hooks/useSitewideSettings';
+import { SitewideSettings } from '../../types/SitewideSettings';
 
 const EmergencyCallout: React.FC = () => {
-  // Hours of operation
-  const operatingHours = [
-    { day: 'Monday', hours: '7:00 AM - 8:00 PM' },
-    { day: 'Tuesday', hours: '7:00 AM - 8:00 PM' },
-    { day: 'Wednesday', hours: '7:00 AM - 8:00 PM' },
-    { day: 'Thursday', hours: '7:00 AM - 8:00 PM' },
-    { day: 'Friday', hours: '7:00 AM - 8:00 PM' },
-    { day: 'Saturday', hours: '8:00 AM - 5:00 PM' },
-    { day: 'Sunday', hours: '8:00 AM - 5:00 PM' },
+  const { settings, loading } = useSitewideSettings() as { 
+    settings: SitewideSettings | null; 
+    loading: boolean 
+  };
+
+  // Parse business hours from the settings
+  const parseBusinessHours = () => {
+    if (!settings || !settings.business_hours || settings.business_hours.trim() === '') {
+      return [];
+    }
+
+    const daysFullNames: Record<string, string> = {
+      'monday': 'Monday',
+      'tuesday': 'Tuesday',
+      'wednesday': 'Wednesday',
+      'thursday': 'Thursday',
+      'friday': 'Friday',
+      'saturday': 'Saturday',
+      'sunday': 'Sunday'
+    };
+
+    // Split by comma to get each day's schedule
+    const days = settings.business_hours.toLowerCase().split(',');
+    
+    return days
+      .filter(daySchedule => daySchedule && daySchedule.includes(':')) // Make sure item exists and has the right format
+      .map(daySchedule => {
+        // Split by colon to separate day from hours
+        const [day, hours] = daySchedule.split(':');
+        
+        // Ensure day exists and is valid
+        if (!day || !hours) {
+          return { day: 'Unknown', hours: 'Invalid Format' };
+        }
+        
+        const dayName = daysFullNames[day.trim()] || 'Unknown';
+        
+        // Format the hours or return "Closed" if specified
+        const formattedHours = hours.trim().toLowerCase() === 'closed' 
+          ? 'Closed' 
+          : hours.trim()
+              .replace('am', ' AM')
+              .replace('pm', ' PM')
+              .replace('-', ' - ');
+        
+        return {
+          day: dayName,
+          hours: formattedHours
+        };
+      });
+  };
+
+  // Default hours to show while loading or if parsing fails
+  const defaultHours = [
+    { day: 'Monday', hours: 'Loading...' },
+    { day: 'Tuesday', hours: 'Loading...' },
+    { day: 'Wednesday', hours: 'Loading...' },
+    { day: 'Thursday', hours: 'Loading...' },
+    { day: 'Friday', hours: 'Loading...' },
+    { day: 'Saturday', hours: 'Loading...' },
+    { day: 'Sunday', hours: 'Loading...' },
   ];
+
+  // Get operating hours or use fallback
+  let operatingHours;
+  
+  try {
+    const parsedHours = !loading && settings?.business_hours 
+      ? parseBusinessHours()
+      : [];
+    
+    // If parsing successful and we have hours for all days, use them
+    // Otherwise fall back to defaults
+    operatingHours = parsedHours.length === 7 ? parsedHours : defaultHours;
+  } catch (error) {
+    console.error("Error parsing business hours:", error);
+    operatingHours = defaultHours;
+  }
 
   return (
     <div className="py-16 bg-[#152f59] text-white">
@@ -26,7 +96,7 @@ const EmergencyCallout: React.FC = () => {
           <p className="text-lg mb-4">
             Call us today at{' '}
             <span className="text-3xl font-bold text-[#7ac144]">
-              (555) 123-4567
+              {loading || !settings?.emergency_phone ? '(555) 123-4567' : settings.emergency_phone}
             </span>{' '}
             and follow the prompts.
           </p>

@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 
 // Define interfaces for your data types
 interface CompanyHistory {
   title: string;
-  content: string[];
+  content: string;
   imageUrl: string;
   imageAlt: string;
 }
@@ -17,7 +18,7 @@ interface Certification {
 
 interface ExpertiseSection {
   title: string;
-  content: string[];
+  content: string;
   certifications: Certification[];
   imageUrl: string;
   imageAlt: string;
@@ -28,12 +29,12 @@ interface TeamMember {
   name: string;
   position: string;
   bio: string;
-  imageUrl: string;
+  image_url: string;
 }
 
 interface CareerSection {
   title: string;
-  content: string[];
+  content: string;
   buttonText: string;
   buttonUrl: string;
   imageUrl: string;
@@ -55,45 +56,38 @@ const AboutPage = () => {
         setLoading(true);
         
         // Example of future implementation:
-        // const { data: historyData } = await supabase.from('company_history').select('*').single();
-        // const { data: expertiseData } = await supabase.from('expertise_section').select('*').single();
-        // const { data: certificationsData } = await supabase.from('certifications').select('*');
-        // const { data: teamData } = await supabase.from('team_members').select('*');
-        // const { data: careerData } = await supabase.from('career_section').select('*').single();
+        const { data: historyData } = await supabase.from('company_history').select('*').single();
+        const { data: expertiseData } = await supabase.from('expertise_section').select('*').single();
+        const { data: certificationsData } = await supabase.from('certifications').select('*');
+
+
+        const { data: teamData } = await supabase.from('team_members').select('*');
+        const { data: careerData } = await supabase.from('career_section').select('*').single();
         
-        // For now, set placeholder data
         setCompanyHistory({
-          title: "Company History",
-          content: ["Your company history content here.", "Additional paragraphs here."],
-          imageUrl: "/placeholder-image.jpg",
-          imageAlt: "Company History"
+          title: historyData?.title || "Company History",
+          content: historyData?.content || "Your company history content here.",
+          imageUrl: historyData?.image_url || "/placeholder-history.jpg",
+          imageAlt: historyData?.image_alt || "Company History"
         });
         
         setExpertiseSection({
-          title: "Certifications and Expertise",
-          content: ["Your certifications content here.", "Additional paragraphs here."],
-          certifications: [
-            { id: 1, name: "Certification 1", icon: "/cert1-icon.png" },
-            { id: 2, name: "Certification 2", icon: "/cert2-icon.png" },
-            { id: 3, name: "Certification 3", icon: "/cert3-icon.png" }
-          ],
-          imageUrl: "/placeholder-certification.jpg",
-          imageAlt: "Certifications and Expertise"
+          title: expertiseData?.title || "Certifications and Expertise",
+          content: expertiseData?.content || "Your certifications content here.",
+          certifications: certificationsData || [],
+          imageUrl: expertiseData?.image_url || "/placeholder-expertise.jpg",
+          imageAlt: expertiseData?.image_alt || "Certifications and Expertise"
         });
         
-        setTeamMembers([
-          { id: 1, name: "Team Member 1", position: "Position", bio: "Brief description about the team member.", imageUrl: "/placeholder-team-1.jpg" },
-          { id: 2, name: "Team Member 2", position: "Position", bio: "Brief description about the team member.", imageUrl: "/placeholder-team-2.jpg" },
-          { id: 3, name: "Team Member 3", position: "Position", bio: "Brief description about the team member.", imageUrl: "/placeholder-team-3.jpg" }
-        ]);
+        setTeamMembers(teamData || []);
         
         setCareerSection({
-          title: "Join the Team",
-          content: ["Your join the team content here.", "Additional paragraphs here."],
-          buttonText: "Apply Now",
-          buttonUrl: "/careers/apply",
-          imageUrl: "/placeholder-careers.jpg",
-          imageAlt: "Join Our Team"
+          title: careerData?.title || "Join Our Team",
+          content: careerData?.content || "Your career section content here.",
+          buttonText: careerData?.button_text || "Apply Now",
+          buttonUrl: careerData?.button_url || "/careers/apply",
+          imageUrl: careerData?.image_url || "/placeholder-careers.jpg",
+          imageAlt: careerData?.image_alt || "Join Our Team"
         });
         
         setLoading(false);
@@ -126,9 +120,16 @@ const AboutPage = () => {
             <div className="w-full md:w-1/2">
               <h2 className="text-3xl font-bold text-[#152f59] mb-4">{companyHistory.title}</h2>
               <div className="space-y-4">
-                {companyHistory.content.map((paragraph, index) => (
-                  <p key={index} className="text-gray-700">{paragraph}</p>
-                ))}
+              {companyHistory?.content ? (
+                <div 
+                  className="text-gray-700 mb-4 prose max-w-none" 
+                  dangerouslySetInnerHTML={{ __html: companyHistory.content }}
+                />
+              ) : (
+                <p className="text-gray-700 mb-4">
+                  loading...
+                </p>
+              )}
               </div>
             </div>
             <div className="w-full md:w-1/2">
@@ -168,10 +169,16 @@ const AboutPage = () => {
             <div className="w-full md:w-1/2">
               <h2 className="text-3xl font-bold text-[#152f59] mb-4">{expertiseSection.title}</h2>
               <div className="space-y-4">
-                {expertiseSection.content.map((paragraph, index) => (
-                  <p key={index} className="text-gray-700">{paragraph}</p>
-                ))}
-                
+                {expertiseSection?.content ? (
+                  <div 
+                    className="text-gray-700 mb-4 prose max-w-none" 
+                    dangerouslySetInnerHTML={{ __html: expertiseSection.content }}
+                  />
+                  ) : (
+                  <p className="text-gray-700 mb-4">
+                    loading...
+                  </p>
+                )}                
                 {/* Certification icons/badges */}
                 {expertiseSection.certifications.length > 0 && (
                   <div className="flex flex-wrap gap-4 mt-6">
@@ -200,9 +207,9 @@ const AboutPage = () => {
             teamMembers.map((member) => (
               <div key={member.id} className="bg-white rounded-lg shadow-md overflow-hidden">
                 <div className="aspect-square bg-gray-200 overflow-hidden">
-                  {member.imageUrl ? (
+                  {member.image_url ? (
                     <img 
-                      src={member.imageUrl} 
+                      src={member.image_url} 
                       alt={member.name} 
                       className="w-full h-full object-cover"
                     />
@@ -215,7 +222,16 @@ const AboutPage = () => {
                 <div className="p-4">
                   <h3 className="text-xl font-semibold text-[#152f59]">{member.name}</h3>
                   <p className="text-[#7ac144] font-medium">{member.position}</p>
-                  <p className="text-gray-700 mt-2">{member.bio}</p>
+                  {member?.bio ? (
+                    <div 
+                      className="text-gray-700 mb-4 prose max-w-none" 
+                      dangerouslySetInnerHTML={{ __html: member?.bio }}
+                    />
+                    ) : (
+                    <p className="text-gray-700 mb-4">
+                      loading...
+                    </p>
+                  )}       
                 </div>
               </div>
             ))
@@ -232,12 +248,18 @@ const AboutPage = () => {
         <section className="mb-8 bg-[#152f59] text-white p-8 rounded-lg">
           <div className="flex flex-col md:flex-row items-center gap-8">
             <div className="w-full md:w-2/3">
-              <h2 className="text-3xl font-bold mb-4">{careerSection.title}</h2>
+              <h2 className="text-3xl font-bold mb-4">{careerSection?.title}</h2>
               <div className="space-y-4">
-                {careerSection.content.map((paragraph, index) => (
-                  <p key={index}>{paragraph}</p>
-                ))}
-                
+                {careerSection?.content ? (
+                  <div 
+                    className="text-white mb-4 prose max-w-none" 
+                    dangerouslySetInnerHTML={{ __html: careerSection?.content }}
+                  />
+                ) : (
+                  <p className="text-gray-700 mb-4">
+                    loading...
+                  </p>
+                )}
                 <Link to={careerSection.buttonUrl}>
                   <button className="mt-6 bg-[#7ac144] hover:bg-opacity-90 text-white font-bold py-3 px-8 rounded-lg transition-all">
                     {careerSection.buttonText}

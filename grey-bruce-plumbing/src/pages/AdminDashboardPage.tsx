@@ -3,6 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import SitewideSettingsEditor from '../components/AdminSections/SitewideSettingsEditor';
 import ServiceAreaEditor from '../components/AdminSections/ServiceAreaEditor';
+import TestimonialEditor from '../components/AdminSections/TestimonialEditor';
+import TrustedBrandsEditor from '../components/AdminSections/TrustedBrandsEditor';
+import AboutUsPreviewEditor from '../components/AdminSections/AboutUsPreviewEditor';
+import AboutUsEditor from '../components/AdminSections/AboutUsEditor';
 
 type AdminTab = 'sitewide' | 'services' | 'about-preview' | 'trusted-brands' | 'testimonials' | 'service-area' | 'about-page';
 
@@ -90,8 +94,12 @@ const AdminDashboardPage = () => {
         <div className="bg-white p-6 rounded-lg shadow-md">
           {activeTab === 'sitewide' && <SitewideSettingsEditor />}
           {activeTab === 'service-area' && <ServiceAreaEditor />}
+          {activeTab === 'testimonials' && <TestimonialEditor />}
+          {activeTab === 'trusted-brands' && <TrustedBrandsEditor />}
+          {activeTab === 'about-preview' && <AboutUsPreviewEditor />}
+          {activeTab === 'about-page' && <AboutUsEditor />}
           {/* Other tab content components will be added here */}
-          {(activeTab !== 'sitewide' && activeTab !== 'service-area') && (
+          {(activeTab !== 'sitewide' && activeTab !== 'service-area' && activeTab !== 'testimonials' && activeTab !== 'trusted-brands' && activeTab !== 'about-preview' && activeTab !== 'about-page') && (
             <div className="text-center py-12 text-gray-500">
               This section is under development
             </div>
