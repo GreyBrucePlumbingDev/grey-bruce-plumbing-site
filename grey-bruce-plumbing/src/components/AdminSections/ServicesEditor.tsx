@@ -12,14 +12,14 @@ import TipTap from '../TipTap';
 const benefitSchema = z.object({
   id: z.string().optional(),
   title: z.string().min(1, "Title is required"),
-  description: z.string().min(1, "Description is required"),
+  description: z.string().min(1, "Description is required").optional(),
   iconName: z.string().optional(),
 });
 
 const problemSchema = z.object({
   id: z.string().optional(),
   title: z.string().min(1, "Title is required"),
-  description: z.string().min(1, "Description is required"),
+  description: z.string().min(1, "Description is required").optional(),
   solution: z.string().optional(),
 });
 
@@ -27,12 +27,12 @@ const processStepSchema = z.object({
   id: z.string().optional(),
   stepNumber: z.number().min(1, "Step number is required"),
   title: z.string().min(1, "Title is required"),
-  description: z.string().min(1, "Description is required"),
+  description: z.string().min(1, "Description is required").optional(),
   imageUrl: z.string().optional(),
 });
 
 const relatedServiceSchema = z.object({
-    id: z.string().min(1, "Please select a service"),
+    id: z.string().min(1, "Please select a service").optional(),
     title: z.string(),
     slug: z.string(),
     description: z.string(),
@@ -402,15 +402,16 @@ const ServicesEditor: React.FC = () => {
                     <span className="label-text font-medium">Service Overview*</span>
                     </label>
                     <Controller
-                    name="overview"
-                    control={control}
-                    render={({ field }) => (
-                        <TipTap
-                            initialContent={field.value}
-                            onSave={(content) => field.onChange(content)}
-                            editorHeight="min-h-[150px]"
-                        />
-                    )}
+                        name="overview"
+                        control={control}
+                        render={({ field }) => (
+                            <TipTap
+                                key={`overview-${selectedService || 'new'}`}
+                                initialContent={field.value || ''}
+                                onSave={(content) => field.onChange(content)}
+                                editorHeight="min-h-[150px]"
+                            />
+                        )}
                     />
                     {errors.overview && (
                     <p className="text-red-500 text-sm mt-1">{errors.overview.message}</p>
@@ -419,21 +420,22 @@ const ServicesEditor: React.FC = () => {
                 
                 <div className="mb-4">
                     <label className="label">
-                    <span className="label-text font-medium">Short Summary*</span>
+                        <span className="label-text font-medium">Short Summary*</span>
                     </label>
                     <Controller
-                    name="summary"
-                    control={control}
-                    render={({ field }) => (
-                        <TipTap
-                            initialContent={field.value}
-                            onSave={(content) => field.onChange(content)}
-                            editorHeight="min-h-[100px]"
+                        name="summary"
+                        control={control}
+                        render={({ field }) => (
+                        <input 
+                            {...field} 
+                            type="text"
+                            placeholder="Enter a brief summary of the service"
+                            className="input input-bordered w-full" 
                         />
-                    )}
+                        )}
                     />
                     {errors.summary && (
-                    <p className="text-red-500 text-sm mt-1">{errors.summary.message}</p>
+                        <p className="text-red-500 text-sm mt-1">{errors.summary.message}</p>
                     )}
                 </div>
                 
@@ -609,7 +611,7 @@ const ServicesEditor: React.FC = () => {
                         control={control}
                         render={({ field }) => (
                             <TipTap
-                              initialContent={field.value}
+                              initialContent={field.value || ''}
                               onSave={(content) => field.onChange(content)}
                               editorHeight="min-h-[120px]"
                             />
@@ -719,7 +721,7 @@ const ServicesEditor: React.FC = () => {
                         control={control}
                         render={({ field }) => (
                             <TipTap
-                              initialContent={field.value}
+                              initialContent={field.value || ''}
                               onSave={(content) => field.onChange(content)}
                               editorHeight="min-h-[120px]"
                             />
@@ -833,7 +835,7 @@ const ServicesEditor: React.FC = () => {
                             // Auto-fill other fields
                             setValue(`relatedServices.${index}.title`, selectedService.title);
                             setValue(`relatedServices.${index}.slug`, selectedService.slug);
-                            setValue(`relatedServices.${index}.description`, selectedService.overview);
+                            setValue(`relatedServices.${index}.description`, selectedService.summary);
                             setValue(`relatedServices.${index}.imageUrl`, selectedService.imageUrl || '');
                             }
                         }}

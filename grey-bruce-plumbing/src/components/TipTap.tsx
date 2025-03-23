@@ -5,7 +5,6 @@ import TextStyle from '@tiptap/extension-text-style';
 import Image from '@tiptap/extension-image';
 import { EditorProvider, useCurrentEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import Dropcursor from '@tiptap/extension-dropcursor';
 import { supabase } from '../lib/supabase';
 
 interface TipTapProps {
@@ -261,7 +260,6 @@ const TipTap: React.FC<TipTapProps> = ({
         keepAttributes: false,
       },
     }),
-    Dropcursor,
   ];
 
   return (
