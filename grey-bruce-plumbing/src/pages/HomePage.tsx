@@ -11,6 +11,7 @@ import ServiceAreaMap from '../components/sections/ServiceAreaMap';
 import ContactUs from '../components/sections/ContactUs';
 import Container from '../components/common/Container';
 import TrustedBrands from '../components/sections/TrustedBrands';
+import DocumentHead from '../components/DocumentHead';
 
 const HomePage = () => {
   useEffect(() => {
@@ -19,55 +20,58 @@ const HomePage = () => {
   }, [])
 
   return (
-    <div>
-      <section id="home">
-        <HeroSection />
-      </section>
+    <>
+      <DocumentHead pageTitle="Home" />
+      <div>
+        <section id="home">
+          <HeroSection />
+        </section>
 
-      <section id="services" className="py-12">
-          <PopularServices />
-      </section>
-      
-      <section id="about" className="py-12 bg-gray-50">
-        <Container>
-          <AboutUsPreview />
-        </Container>
-      </section>
-
-      <section className="py-12">
-        <TrustedBrands />
-      </section>
-      
-      <section id="reviews" className="py-12">
-        <Container>
-          <Testimonials />
-        </Container>
-      </section>
-      
-      <section id="blog" className="py-12 bg-gray-50">
-        <Container>
-          <BlogPreview />
-        </Container>
-      </section>
-      
-      <section className="py-12">
+        <section id="services" className="py-12">
+            <PopularServices />
+        </section>
         
-          <EmergencyCallout />
+        <section id="about" className="py-12 bg-gray-50">
+          <Container>
+            <AboutUsPreview />
+          </Container>
+        </section>
+
+        <section className="py-12">
+          <TrustedBrands />
+        </section>
         
-      </section>
+        <section id="reviews" className="py-12">
+          <Container>
+            <Testimonials />
+          </Container>
+        </section>
+        
+        <section id="blog" className="py-12 bg-gray-50">
+          <Container>
+            <BlogPreview />
+          </Container>
+        </section>
+        
+        <section className="py-12">
+          
+            <EmergencyCallout />
+          
+        </section>
 
-      <section id="serviceArea" className="py-12 bg-gray-50">
-        <Container>
-          <ServiceAreaMap />
-        </Container>
-      </section>
+        <section id="serviceArea" className="py-12 bg-gray-50">
+          <Container>
+            <ServiceAreaMap />
+          </Container>
+        </section>
 
-      <section id='contact' className="py-12">
-        <Container>
-          <ContactUs />
-        </Container>
-      </section>
-    </div>
+        <section id='contact' className="py-12">
+          <Container>
+            <ContactUs />
+          </Container>
+        </section>
+      </div>
+    </>
   )
 }
 

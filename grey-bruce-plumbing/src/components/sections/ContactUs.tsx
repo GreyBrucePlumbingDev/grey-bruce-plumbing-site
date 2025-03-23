@@ -73,7 +73,22 @@ const ContactUs: React.FC = () => {
               </svg>
             </div>
             <h3 className="text-xl font-bold text-[#152f59] mb-2">Visit Us</h3>
-            <p className="text-gray-600 mb-4">{settings?.business_hours}</p>
+            <div className="text-gray-600 mb-4">
+              {settings?.business_hours && (
+                <div className="grid grid-cols-1 gap-1 text-sm">
+                  {settings.business_hours.split(',').map((day) => {
+                    if (!day) return null;
+                    const [dayName, hours] = day.split(':');
+                    return (
+                      <div key={dayName} className="flex justify-between px-2">
+                        <span className="capitalize font-medium">{dayName}</span>
+                        <span>{hours}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>            
             <address className="not-italic text-lg text-[#7ac144]">
               {settings?.address1_line}<br />
               {settings?.address1_city}, {settings?.address1_province}

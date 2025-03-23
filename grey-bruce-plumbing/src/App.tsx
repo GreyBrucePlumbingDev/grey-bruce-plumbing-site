@@ -9,11 +9,16 @@ import AdminLoginPage from './pages/AdminLoginPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './contexts/AuthContext';
+import BlogEditor from './components/AdminSections/BlogEditor';
+import BlogPage from './pages/Blogs';
+import BlogPostPage from './pages/BlogPost';
+import DocumentHead from './components/DocumentHead';
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <DocumentHead />
         <Routes>
           {/* Wrap everything in MainLayout (navbar and footer and chatbot) */}
           <Route path="/" element={<MainLayout />}>
@@ -23,8 +28,11 @@ function App() {
             
             {/* Service pages with dynamic routing */}
             <Route path="services/:serviceSlug" element={<ServicePage />} />
+
+            {/* Blog pages with dynamic routing */}
+            <Route path="blogs" element={<BlogPage />} />
+            <Route path="blogs/:postId" element={<BlogPostPage />} />
             
-            {/*<Route path="blog" element={<BlogPage />} />
             {/* Add more routes as needed */}
           </Route>
           
@@ -34,7 +42,8 @@ function App() {
           {/* Protected admin routes */}
           <Route element={<ProtectedRoute />}>
             <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
-            {/* Add more admin routes as needed */}
+            <Route path="admin/blog/new" element={<BlogEditor blogFolderPath="blog-images" />} />
+            <Route path="admin/blog/edit/:id" element={<BlogEditor blogFolderPath="blog-images" />} />
           </Route>
         </Routes>
       </BrowserRouter>

@@ -1,23 +1,42 @@
 // src/components/Navbar.tsx
 import Container from './common/Container';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useSitewideSettings } from '../hooks/useSitewideSettings';
 import { SitewideSettings } from '../types/SitewideSettings';
 
 const Navbar = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { settings, loading } = useSitewideSettings() as { settings: SitewideSettings | null; loading: boolean };
+
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
-      const offset = -40; // Adjust this value based on your navbar height
+      const offset = -40;
       const elementPosition = element.getBoundingClientRect().top + window.scrollY;
       const offsetPosition = elementPosition + offset;
       window.scrollTo({
         top: offsetPosition,
         behavior: 'smooth',
       });
+    } else if (location.pathname !== '/') {
+      navigate(`/`);
+      setTimeout(() => {
+        const newElement = document.getElementById(sectionId);
+        if (newElement) {
+          const offset = -40;
+          const elementPosition = newElement.getBoundingClientRect().top + window.scrollY;
+          const offsetPosition = elementPosition + offset;
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth',
+          });
+        }
+      }, 1000); 
+    } else {
+      console.log(`Element with id ${sectionId} not found`);
     }
   };
-  const { settings, loading } = useSitewideSettings() as { settings: SitewideSettings | null; loading: boolean };
 
   // Loading state with minimal placeholder to reduce layout shift
   if (loading) return (

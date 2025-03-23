@@ -1,7 +1,7 @@
 // src/services/supabaseService.ts
 
 import { createClient } from '@supabase/supabase-js';
-import { ServiceContent } from '../types/ServiceTypes';
+import { RelatedService, ServiceContent } from '../types/ServiceTypes';
 
 // Initialize Supabase client (replace with your project URL and public anon key)
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
@@ -22,57 +22,48 @@ export const getServiceBySlug = async (slug: string): Promise<ServiceContent | n
 
     // Fetch benefits for this service
     const { data: benefits, error: benefitsError } = await supabase
-      .from('service_benefits')
-      .select('*')
-      .eq('service_id', serviceData.id)
-      .order('display_order', { ascending: true });
+      .from('services')
+      .select('benefits')
+      .eq('id', serviceData.id)
+      .single();
     
     if (benefitsError) throw benefitsError;
 
     // Fetch common problems
     const { data: problems, error: problemsError } = await supabase
-      .from('service_problems')
-      .select('*')
-      .eq('service_id', serviceData.id)
-      .order('display_order', { ascending: true });
+      .from('services')
+      .select('commonProblems')
+      .eq('id', serviceData.id)
+      .single();
     
     if (problemsError) throw problemsError;
 
     // Fetch process steps
     const { data: processSteps, error: processError } = await supabase
-      .from('service_process')
-      .select('*')
-      .eq('service_id', serviceData.id)
-      .order('step_number', { ascending: true });
+      .from('services')
+      .select('process')
+      .eq('id', serviceData.id)
+      .single();
     
     if (processError) throw processError;
 
     // Fetch related services
     const { data: relatedServices, error: relatedError } = await supabase
-      .from('service_related')
-      .select(`
-        id,
-        related_service:related_service_id (
-          id,
-          title,
-          slug,
-          description,
-          image_url
-        )
-      `)
-      .eq('service_id', serviceData.id);
+      .from('services')
+      .select(`id, relatedServices`)
+      .eq('id', serviceData.id)
+      .single();
     
     if (relatedError) throw relatedError;
 
     // Format the related services data to match our interface
-    const formattedRelatedServices = relatedServices.map(item => {
-      const rel = Array.isArray(item.related_service) ? item.related_service[0] : item.related_service;
+    const formattedRelatedServices = relatedServices.relatedServices.map((item : RelatedService) => {
       return {
-        id: rel.id,
-        title: rel.title,
-        slug: rel.slug,
-        description: rel.description,
-        imageUrl: rel.image_url,
+        id: item.id,
+        title: item.title,
+        slug: item.slug,
+        description: item.description,
+        imageUrl: item.imageUrl,
       };
     });
 
@@ -82,11 +73,12 @@ export const getServiceBySlug = async (slug: string): Promise<ServiceContent | n
       slug: serviceData.slug,
       title: serviceData.title,
       overview: serviceData.overview,
-      benefits: benefits || [],
-      commonProblems: problems || [],
-      process: processSteps || [],
+      benefits: benefits?.benefits || [],
+      commonProblems: problems?.commonProblems || [],
+      process: processSteps?.process || [],
       relatedServices: formattedRelatedServices || [],
-      imageUrl: serviceData.image_url,
+      imageUrl: serviceData.imageUrl,
+      summary: serviceData.summary,
     };
 
     return service;
@@ -102,7 +94,7 @@ export const getAllServiceSlugs = async (): Promise<string[]> => {
     const { data, error } = await supabase
       .from('services')
       .select('slug')
-      .order('display_order', { ascending: true });
+      .order('created_at', { ascending: true });
     
     if (error) throw error;
     

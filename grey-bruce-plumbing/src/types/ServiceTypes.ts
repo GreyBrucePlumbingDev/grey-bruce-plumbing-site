@@ -10,6 +10,7 @@ export interface ServiceContent {
     process: ProcessStep[];
     relatedServices: RelatedService[];
     imageUrl: string;
+    summary: string;
   }
   
   export interface Benefit {

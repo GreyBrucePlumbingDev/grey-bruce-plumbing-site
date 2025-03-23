@@ -9,6 +9,7 @@ interface SitewideSettings {
   id?: string;
   company_name: string;
   company_logo_url: string;
+  favicon_url: string;
   phone_number: string;
   emergency_phone: string;
   email: string;
@@ -42,6 +43,7 @@ const sitewideSettingsSchema = z.object({
   id: z.string().optional(),
   company_name: z.string().min(1, 'Company name is required'),
   company_logo_url: z.string().url('Must be a valid URL').or(z.string().length(0)),
+  favicon_url: z.string().url('Must be a valid URL').or(z.string().length(0)),
   phone_number: z.string().min(1, 'Phone number is required'),
   emergency_phone: z.string().min(1, 'Emergency contact number is required'),
   email: z.string().email('Must be a valid email address'),
@@ -75,6 +77,8 @@ const SitewideSettingsEditor: React.FC = () => {
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [faviconFile, setFaviconFile] = useState<File | null>(null);
+  const [faviconPreview, setFaviconPreview] = useState<string | null>(null);
 
   // Initialize form with react-hook-form and zod validation
   const {
@@ -88,6 +92,7 @@ const SitewideSettingsEditor: React.FC = () => {
       id: '',
       company_name: '',
       company_logo_url: '',
+      favicon_url: '',
       phone_number: '',
       emergency_phone: '',
       email: '',
@@ -133,9 +138,11 @@ const SitewideSettingsEditor: React.FC = () => {
         if (data[0].company_logo_url) {
           setLogoPreview(data[0].company_logo_url);
         }
+        if (data[0].favicon_url) {
+          setFaviconPreview(data[0].favicon_url);
+        }
       } else {
         console.log('No existing settings found, using default values');
-        // Continue with default values that are already set
       }
     } catch (err) {
       console.error('Error:', err);
@@ -150,6 +157,7 @@ const SitewideSettingsEditor: React.FC = () => {
 
   // Handle logo file change
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("Logo changed")
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setLogoFile(file);
@@ -165,6 +173,7 @@ const SitewideSettingsEditor: React.FC = () => {
 
   // Upload logo to Supabase storage
   const uploadLogo = async (): Promise<string | null> => {
+    console.log("Uploading logo");
     if (!logoFile) return null;
     
     try {
@@ -194,6 +203,52 @@ const SitewideSettingsEditor: React.FC = () => {
     }
   };
 
+  const handleFaviconChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("Favicon changed")
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setFaviconFile(file);
+      
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFaviconPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadFavicon = async (): Promise<string | null> => {
+    console.log("Uploading favicon");
+    if (!faviconFile) return null;
+    
+    try {
+      const fileExt = faviconFile.name.split('.').pop();
+      const fileName = `favicon_${Date.now()}.${fileExt}`;
+      const filePath = `favicons/${fileName}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('assets')
+        .upload(filePath, faviconFile);
+        
+      if (uploadError) {
+        console.error('Error uploading favicon:', uploadError);
+        return null;
+      }
+      
+      // Get public URL
+      const { data } = supabase.storage
+        .from('assets')
+        .getPublicUrl(filePath);
+        
+      return data.publicUrl;
+      
+    } catch (err) {
+      console.error('Error uploading favicon:', err);
+      return null;
+    }
+  };
+
   // Save settings to Supabase
   const onSubmit = async (formData: SitewideSettings) => {
     console.log("saving")
@@ -210,6 +265,13 @@ const SitewideSettingsEditor: React.FC = () => {
         const logoUrl = await uploadLogo();
         if (logoUrl) {
           formData.company_logo_url = logoUrl;
+        }
+      }
+
+      if (faviconFile) {
+        const faviconUrl = await uploadFavicon();
+        if (faviconUrl) {
+          formData.favicon_url = faviconUrl;
         }
       }
   
@@ -266,11 +328,7 @@ const SitewideSettingsEditor: React.FC = () => {
           <span className="loading loading-spinner loading-lg text-primary"></span>
         </div>
       ) : (
-        <form onSubmit={(e) => {
-            console.log("Form submitted");
-            console.log("Form errors:", errors);
-            handleSubmit(onSubmit)(e);
-          }} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Company Information Section */}
           <div className="border-b border-gray-200 pb-6">
             <h3 className="text-xl font-semibold text-gray-700 mb-4">Company Information</h3>
@@ -412,6 +470,28 @@ const SitewideSettingsEditor: React.FC = () => {
                 <span className="label-text-alt">Recommended size: 200x60px</span>
               </label>
             </div>
+
+            <div className="form-control w-full mt-4">
+                <label className="label">
+                  <span className="label-text font-medium">Tab Icon (Favicon)</span>
+                </label>
+                
+                {faviconPreview && (
+                  <div className="mb-4">
+                    <img src={faviconPreview} alt="Favicon Preview" className="h-8 w-8 object-contain" />
+                  </div>
+                )}
+                
+                <input
+                  type="file"
+                  onChange={handleFaviconChange}
+                  accept="image/*"
+                  className="file-input file-input-bordered w-full max-w-xs"
+                />
+                <label className="label">
+                  <span className="label-text-alt">Recommended size: 32x32px or 64x64px (square image)</span>
+                </label>
+              </div>
           </div>
 
           {/* Primary Address Section */}

@@ -1,5 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { supabase } from '../../lib/supabase';
 
 interface BlogPostProps {
   id: string;
@@ -10,23 +12,61 @@ interface BlogPostProps {
 }
 
 const BlogPreview: React.FC = () => {
-  // Hardcoded blog posts (will be replaced with Supabase data later)
-  const blogPosts: BlogPostProps[] = [
-    {
-      id: "water-heater-maintenance",
-      title: "5 Essential Water Heater Maintenance Tips for Homeowners",
-      preview: "Regular maintenance of your water heater can extend its lifespan and prevent costly repairs. Learn these simple tips to keep your system running efficiently year-round.",
-      imageUrl: "/images/blog/water-heater.jpg",
-      date: "March 12, 2025"
-    },
-    {
-      id: "eco-friendly-plumbing",
-      title: "Eco-Friendly Plumbing Solutions for Modern Homes",
-      preview: "Discover how environmentally conscious plumbing choices can reduce your water usage, lower utility bills, and help protect our planet's valuable resources.",
-      imageUrl: "/images/blog/eco-plumbing.jpg",
-      date: "February 28, 2025"
-    }
-  ];
+  const [blogPosts, setBlogPosts] = useState<BlogPostProps[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchBlogPosts = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Fetch the last 4 published blog posts ordered by creation date
+        const { data, error } = await supabase
+          .from('blog_posts')
+          .select('id, title, excerpt, featured_image, slug, created_at')
+          .eq('published', true)
+          .order('created_at', { ascending: false })
+          .limit(4);
+        
+        if (error) {
+          throw new Error(error.message);
+        }
+        
+        // Transform the Supabase data to match your BlogPostProps format
+        const formattedPosts: BlogPostProps[] = (data || []).map(post => ({
+          id: post.slug, // Using slug as the ID
+          title: post.title,
+          preview: post.excerpt || '',
+          imageUrl: post.featured_image || '/images/blog/default.jpg', // Fallback to default image if needed
+          date: formatDate(post.created_at)
+        }));
+        
+        setBlogPosts(formattedPosts);
+      } catch (err) {
+        console.error('Error fetching blog posts:', err);
+        setError(err instanceof Error ? err.message : 'Failed to fetch blog posts');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchBlogPosts();
+  }, []);
+
+  // Format date to a readable format
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long', 
+      day: 'numeric'
+    });
+  };
+
+  if (isLoading) return <div className="text-center p-4">Loading blog posts...</div>;
+  if (error) return <div className="text-center p-4 text-red-500">Error: {error}</div>;
+
 
   return (
     <div id="blog" className="py-16 bg-gray-50">
@@ -40,9 +80,9 @@ const BlogPreview: React.FC = () => {
             <div key={post.id} className="bg-white rounded-lg shadow-md overflow-hidden">
               <div className="flex flex-col md:flex-row">
                 {/* Image section (30%) */}
-                <div className="md:w-[30%] h-48 md:h-auto">
+                <div className="md:w-[30%] h-48 md:h-64 overflow-hidden flex-shrink-0">
                   <img 
-                    //src={post.imageUrl} 
+                    src={post.imageUrl} 
                     alt={post.title}
                     className="w-full h-full object-cover"
                     // Fallback image in case the actual image doesn't load
@@ -67,7 +107,7 @@ const BlogPreview: React.FC = () => {
                   
                   <div className="flex justify-end">
                     <Link 
-                      to={`/blog/${post.id}`}
+                      to={`/blogs/${post.id}`}
                       className="text-[#7ac144] hover:text-[#152f59] font-medium underline flex items-center transition-colors duration-300"
                     >
                       Read more <span className="ml-1">→</span>
@@ -82,7 +122,7 @@ const BlogPreview: React.FC = () => {
         {/* "View all blog posts" button */}
         <div className="flex justify-center mt-10">
           <Link 
-            to="/blog"
+            to="/blogs"
             className="px-6 py-3 bg-[#152f59] hover:bg-[#7ac144] text-white font-medium rounded-lg transition-colors duration-300 flex items-center"
           >
             View All Blog Posts <span className="ml-2">→</span>

@@ -1,6 +1,10 @@
 // src/components/HeroSection.tsx
+import { useSitewideSettings } from '../../hooks/useSitewideSettings';
+import { SitewideSettings } from '../../types/SitewideSettings';
 
 const HeroSection = () => {
+  const { settings } = useSitewideSettings() as { settings: SitewideSettings | null; loading: boolean };
+
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
@@ -31,8 +35,8 @@ const HeroSection = () => {
             ✔  Tech-Forward Service: Real-time booking updates & Digital billing<br />
           </p>
           <div className="flex flex-col md:flex-row gap-4 mb-12 w-full max-w-md justify-center">
-            <button className="btn bg-[#7ac144] hover:bg-[#6aad39] text-white border-none shadow-md">Book Now</button>
-            <button className="btn bg-[#152f59] hover:bg-[#0e2040] text-white dark:bg-white dark:hover:bg-gray-100 dark:text-[#152f59] border-none shadow-md">Contact Us</button>
+            <a href={settings?.booking_link} className="btn bg-[#7ac144] hover:bg-[#6aad39] text-white border-none shadow-md">Book Now</a>
+            <button className="btn bg-[#152f59] hover:bg-[#0e2040] text-white dark:bg-white dark:hover:bg-gray-100 dark:text-[#152f59] border-none shadow-md" onClick={() => scrollToSection('contact')}>Contact Us</button>
           </div>
           <button 
             onClick={() => scrollToSection('about')} 

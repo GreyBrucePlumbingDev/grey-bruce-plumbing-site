@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, TouchEvent } from 'react';
 import { FaHome, FaBuilding, FaExclamationTriangle, FaWater, FaTint, FaShieldAlt, FaHeadset } from 'react-icons/fa';
 import { FaArrowUpFromWaterPump } from "react-icons/fa6";
 import { Link } from 'react-router-dom';
+import { supabase } from '../../lib/supabase';
 
 interface ServiceCardProps {
   title: string;
@@ -9,6 +10,21 @@ interface ServiceCardProps {
   icon: React.ReactNode;
   url: string;
   isActive: boolean;
+}
+
+interface ServiceData {
+  id: string;
+  slug: string;
+  title: string;
+  overview: string;
+  imageUrl: string;
+  benefits: any;
+  commonProblems: any;
+  process: any;
+  relatedServices: any;
+  created_at: string;
+  updated_at: string;
+  summary: string;
 }
 
 const ServiceCard: React.FC<ServiceCardProps> = ({ title, description, icon, url, isActive }) => {
@@ -34,6 +50,29 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ title, description, icon, url
   );
 };
 
+const getIconForSlug = (slug: string): React.ReactNode => {
+  switch (slug) {
+    case 'residential':
+      return <FaHome />;
+    case 'commercial':
+      return <FaBuilding />;
+    case 'emergency':
+      return <FaExclamationTriangle />;
+    case 'drain':
+      return <FaWater />;
+    case 'water-treatment':
+      return <FaTint />;
+    case 'well-pump':
+      return <FaArrowUpFromWaterPump />;
+    case 'backflow':
+      return <FaShieldAlt />;
+    case 'consultation':
+      return <FaHeadset />;
+    default:
+      return <FaHome />;
+  }
+};
+
 const PopularServices: React.FC = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [direction, setDirection] = useState<'left' | 'right' | ''>('');
@@ -41,11 +80,51 @@ const PopularServices: React.FC = () => {
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
+  const [services, setServices] = useState<Array<{
+    id: string;
+    title: string;
+    description: string;
+    icon: React.ReactNode;
+    url: string;
+  }>>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Minimum swipe distance threshold (in px)
   const minSwipeDistance = 50;
 
   useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('services')
+          .select('*');
+        
+        if (error) {
+          throw error;
+        }
+
+        if (data) {
+          const formattedServices = data.map((service: ServiceData) => ({
+            id: service.id,
+            title: service.title,
+            description: service.summary || service.overview.substring(0, 100),
+            icon: getIconForSlug(service.slug),
+            url: `/services/${service.slug}`
+          }));
+          setServices(formattedServices);
+          console.log('Services:', formattedServices);
+        }
+      } catch (err) {
+        console.error('Error fetching services:', err);
+        setError('Failed to load services. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchServices();
+
     const checkIsMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
@@ -59,57 +138,6 @@ const PopularServices: React.FC = () => {
     // Clean up
     return () => window.removeEventListener('resize', checkIsMobile);
   }, []);
-
-  const services = [
-    {
-      title: "Residential Services",
-      description: "Complete plumbing solutions for your home",
-      icon: <FaHome />,
-      url: "/services/residential"
-    },
-    {
-      title: "Commercial Services",
-      description: "Professional plumbing for businesses",
-      icon: <FaBuilding />,
-      url: "/services/commercial"
-    },
-    {
-      title: "Emergency Services",
-      description: "24/7 urgent plumbing assistance",
-      icon: <FaExclamationTriangle />,
-      url: "/services/emergency"
-    },
-    {
-      title: "Drain Services",
-      description: "Clearing and maintenance for all drains",
-      icon: <FaWater />,
-      url: "/services/drain"
-    },
-    {
-      title: "Water Treatment",
-      description: "Clean, safe water solutions for your property",
-      icon: <FaTint />,
-      url: "/services/water-treatment"
-    },
-    {
-      title: "Well Pump Services",
-      description: "Installation and repair of well pump systems",
-      icon: <FaArrowUpFromWaterPump />,
-      url: "/services/well-pump"
-    },
-    {
-      title: "Backflow Prevention",
-      description: "Protect your water supply from contamination",
-      icon: <FaShieldAlt />,
-      url: "/services/backflow"
-    },
-    {
-      title: "Support & Consultation",
-      description: "Expert advice for all plumbing matters",
-      icon: <FaHeadset />,
-      url: "/services/consultation"
-    }
-  ];
 
   const moveLeft = () => {
     setDirection('left');
@@ -150,6 +178,24 @@ const PopularServices: React.FC = () => {
   };
 
   const getVisibleCards = () => {
+    if (loading) {
+      return (
+        <div className="w-full flex justify-center items-center h-[200px]">
+          <span className="loading loading-spinner loading-lg text-primary"></span>
+        </div>
+      );
+    }
+
+    if (error || services.length === 0) {
+      return (
+        <div className="w-full flex justify-center items-center h-[200px]">
+          <div className="alert alert-error">
+            <span>{error || "No services available"}</span>
+          </div>
+        </div>
+      );
+    }
+
     const visibleCount = isMobile ? 1 : 3;
     const halfVisible = isMobile ? 0 : 0.5;
     
@@ -163,23 +209,28 @@ const PopularServices: React.FC = () => {
       indices.push(index);
     }
     
-    return indices.map((index) => (
-      <div 
-        key={index} 
-        className={`
-          transition-all duration-500 px-2
-          ${isMobile ? 'w-full flex justify-center' : Math.abs(indices.indexOf(index) - halfTotal) <= 0.5 ? 'w-full' : 'w-1/4'}
-        `}
-      >
-        <ServiceCard
-          title={services[index].title}
-          description={services[index].description}
-          icon={services[index].icon}
-          url={services[index].url}
-          isActive={index === activeIndex}
-        />
-      </div>
-    ));
+    return indices.map((index) => {
+      // Extract the service for cleaner code
+      const service = services[index];
+      
+      return (
+        <div 
+          key={`visible-${index}`} // Use consistent keys based on position
+          className={`
+            transition-all duration-500 px-2
+            ${isMobile ? 'w-full flex justify-center' : Math.abs(indices.indexOf(index) - halfTotal) <= 0.5 ? 'w-full' : 'w-1/4'}
+          `}
+        >
+          <ServiceCard
+            title={service.title}
+            description={service.description}
+            icon={service.icon}
+            url={service.url}
+            isActive={index === activeIndex}
+          />
+        </div>
+      );
+    });
   };
 
   return (

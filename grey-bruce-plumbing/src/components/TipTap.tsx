@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { Color } from '@tiptap/extension-color';
 import ListItem from '@tiptap/extension-list-item';
 import TextStyle from '@tiptap/extension-text-style';
+import Image from '@tiptap/extension-image';
 import { EditorProvider, useCurrentEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import Dropcursor from '@tiptap/extension-dropcursor';
+import { supabase } from '../lib/supabase';
 
 interface TipTapProps {
   initialContent: string;
@@ -12,9 +15,84 @@ interface TipTapProps {
   saveButtonText?: string;
   loadingSaveText?: string;
   editorHeight?: string;
+  bucketName?: string;
+  folderPath?: string;
 }
 
-const MenuBar = () => {
+const ImageUploadButton = ({ folderPath = 'images'}) => {
+  const { editor } = useCurrentEditor();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  
+  if (!editor) {
+    return null;
+  }
+
+  const uploadImage = async (file: File) => {
+    if (!file) return;
+    
+    try {
+      setIsUploading(true);
+      
+      // Create a unique file name
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `${folderPath}/${fileName}`;
+      
+      // Upload to Supabase Storage
+      const { error } = await supabase.storage
+        .from('assets') 
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Get public URL for the uploaded file
+      const { data: urlData } = supabase.storage
+        .from('assets') 
+        .getPublicUrl(filePath);
+      
+      // Insert image in editor
+      editor.chain().focus().setImage({ src: urlData.publicUrl, alt: file.name }).run();
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Error uploading image. Please try again.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      uploadImage(e.target.files[0]);
+    }
+  };
+
+  return (
+    <>
+      <input 
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept="image/png, image/jpeg, image/gif, image/webp"
+        className="hidden"
+      />
+      <button
+        onClick={() => fileInputRef.current?.click()}
+        disabled={isUploading}
+        className={`px-2 py-1 rounded hover:bg-gray-200 ${isUploading ? 'bg-gray-300' : 'bg-gray-100'}`}
+      >
+        {isUploading ? 'Uploading...' : 'Image'}
+      </button>
+    </>
+  );
+};
+
+const MenuBar = ({ folderPath }: { folderPath?: string }) => {
   const { editor } = useCurrentEditor();
 
   if (!editor) {
@@ -86,6 +164,7 @@ const MenuBar = () => {
       >
         Divider
       </button>
+      <ImageUploadButton folderPath={folderPath} />
       <button
         onClick={() => editor.chain().focus().setColor('#7ac144').run()}
         className={`px-2 py-1 rounded hover:bg-gray-200 ${editor.isActive('textStyle', { color: '#7ac144' }) ? 'bg-[#7ac144] text-white' : 'bg-gray-100'}`}
@@ -158,12 +237,20 @@ const TipTap: React.FC<TipTapProps> = ({
   isSaving = false,
   saveButtonText,
   loadingSaveText,
-  editorHeight = 'min-h-[300px]'
+  editorHeight = 'min-h-[300px]',
+  folderPath = 'images'
 }) => {
   // Set up TipTap extensions
   const extensions = [
     Color.configure({ types: [TextStyle.name, ListItem.name] }),
     TextStyle,
+    Image.configure({
+      inline: false,
+      allowBase64: false,
+      HTMLAttributes: {
+        class: 'rounded-lg max-w-full h-auto my-4',
+      },
+    }),
     StarterKit.configure({
       bulletList: {
         keepMarks: true,
@@ -174,12 +261,13 @@ const TipTap: React.FC<TipTapProps> = ({
         keepAttributes: false,
       },
     }),
+    Dropcursor,
   ];
 
   return (
     <div className="border border-gray-300 rounded-lg overflow-hidden">
       <EditorProvider 
-        slotBefore={<MenuBar />} 
+        slotBefore={<MenuBar folderPath={folderPath} />} 
         extensions={extensions} 
         content={initialContent}
         editorContainerProps={{ className: `tiptap-editor prose max-w-none ${editorHeight} p-4` }}
@@ -321,6 +409,14 @@ const TipTap: React.FC<TipTapProps> = ({
         .tiptap-editor ol ul {
           margin-top: 0.5rem;
           margin-bottom: 0.5rem;
+        }
+        
+        /* Image styling */
+        .tiptap-editor img {
+          max-width: 100%;
+          height: auto;
+          border-radius: 0.5rem;
+          margin: 1rem 0;
         }
       `}</style>
     </div>
