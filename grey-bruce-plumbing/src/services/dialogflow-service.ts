@@ -1,4 +1,4 @@
-import type { DialogflowResponse, DialogflowContext, ConversationState } from "../types"
+import type { DialogflowResponse, DialogflowContext } from "../types"
 import { supabase } from "../lib/supabase"
 
 /**
