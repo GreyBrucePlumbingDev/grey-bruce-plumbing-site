@@ -2,6 +2,7 @@ export interface SitewideSettings {
     id?: string;
     company_name: string;
     company_logo_url: string;
+    favicon_url: string;
     phone_number: string;
     emergency_phone: string;
     email: string;
