@@ -64,7 +64,7 @@ export const ChatbotProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
 
     handleWelcome()
-  }, [isOpen, messages.length])
+  }, [isOpen])
 
   // Send message to Dialogflow
   const sendMessage = useCallback(
