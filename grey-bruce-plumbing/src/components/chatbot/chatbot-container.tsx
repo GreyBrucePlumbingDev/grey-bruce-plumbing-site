@@ -7,7 +7,7 @@ import { useChatbot } from "../../contexts/chatbot-context"
 import { useEffect, useState } from "react"
 
 export function ChatbotContainer() {
-  const { isOpen, isLoading } = useChatbot()
+  const { isOpen } = useChatbot()
   const [mounted, setMounted] = useState(false)
 
   // Use effect to handle initial mounting animation
