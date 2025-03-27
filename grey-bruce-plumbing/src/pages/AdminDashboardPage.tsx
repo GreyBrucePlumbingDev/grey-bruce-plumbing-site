@@ -10,8 +10,9 @@ import AboutUsEditor from '../components/AdminSections/AboutUsEditor';
 import ServicesEditor from '../components/AdminSections/ServicesEditor';
 import BlogListPage from '../components/AdminSections/BlogListPage';
 import DocumentHead from '../components/DocumentHead';
+import DomainMappingEditor from '../components/AdminSections/DomainMappingEditor';
 
-type AdminTab = 'sitewide' | 'services' | 'about-preview' | 'trusted-brands' | 'testimonials' | 'service-area' | 'about-page' | 'blog-list' | 'blog-editor';
+type AdminTab = 'sitewide' | 'services' | 'about-preview' | 'trusted-brands' | 'testimonials' | 'service-area' | 'about-page' | 'blog-list' | 'blog-editor' | 'domain-mapping';
 
 const AdminDashboardPage = () => {
   const { user, signOut } = useAuth();
@@ -99,6 +100,12 @@ const AdminDashboardPage = () => {
             >
               Blog
             </button>
+            <button 
+              className={`tab ${activeTab === 'domain-mapping' ? 'tab-active' : ''}`}
+              onClick={() => setActiveTab('domain-mapping')}
+            >
+              Domain Mapping
+            </button>
           </div>
           
           {/* Content area where the settings editor is displayed */}
@@ -111,8 +118,9 @@ const AdminDashboardPage = () => {
             {activeTab === 'about-preview' && <AboutUsPreviewEditor />}
             {activeTab === 'about-page' && <AboutUsEditor />}
             {activeTab === 'blog-list' && <BlogListPage />}
+            {activeTab === 'domain-mapping' && <DomainMappingEditor />}
             {/* Other tab content components will be added here */}
-            {(activeTab !== 'sitewide' && activeTab !== 'services' && activeTab !== 'service-area' && activeTab !== 'testimonials' && activeTab !== 'trusted-brands' && activeTab !== 'about-preview' && activeTab !== 'about-page' && activeTab !== 'blog-list') && (
+            {(activeTab !== 'sitewide' && activeTab !== 'services' && activeTab !== 'service-area' && activeTab !== 'testimonials' && activeTab !== 'trusted-brands' && activeTab !== 'about-preview' && activeTab !== 'about-page' && activeTab !== 'blog-list' && activeTab !== 'domain-mapping') && (
               <div className="text-center py-12 text-gray-500">
                 This section is under development
               </div>

@@ -25,7 +25,7 @@ export function ChatbotContainer() {
       {/* Chatbot window */}
       {isOpen && (
         <div
-          className={`fixed bottom-24 right-6 w-96 max-w-[calc(100vw-2rem)] shadow-xl rounded-lg bg-white z-40 ${
+          className={`fixed bottom-24 right-6 w-96 max-w-[calc(100vw-2rem)] shadow-xl rounded-lg bg-white z-40 flex flex-col ${
             mounted ? "transition-all duration-300" : ""
           } h-[500px] max-h-[80vh]`}
         >
@@ -33,17 +33,9 @@ export function ChatbotContainer() {
             <ChatbotHeader />
           </div>
 
-          {isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white/80 z-10">
-              <span className="loading loading-spinner loading-md text-[#152f59]"></span>
-            </div>
-          )}
-
-          {!isLoading && (
-            <div className="h-[calc(100%-64px)] overflow-hidden">
-              <ChatInterface />
-            </div>
-          )}
+          <div className="flex-1 overflow-hidden">
+            <ChatInterface />
+          </div>
         </div>
       )}
     </>

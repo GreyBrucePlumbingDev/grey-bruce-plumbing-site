@@ -1,265 +1,443 @@
-import React, { useEffect, useState } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { supabase } from '../../lib/supabase';
-import { FiPlus, FiTrash2, FiSave, FiMapPin } from 'react-icons/fi';
+"use client"
 
-// Updated schema - no longer needs to reference site_settings
+import type React from "react"
+
+import { useState, useEffect } from "react"
+import { supabase } from "../../lib/supabase"
+import { useForm, Controller } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+import TipTap from "../../components/TipTap"
+
+// Define the schema for service area form
 const serviceAreaSchema = z.object({
-  mainAddress: z.string().min(5, "Main address is required"),
-  areas: z.array(
-    z.object({
-      name: z.string().min(2, "Area name must be at least 2 characters"),
-      id: z.number().optional() // To preserve existing IDs when updating
-    })
-  ).min(1, "At least one service area is required")
-});
+  name: z.string().min(2, "Area name must be at least 2 characters"),
+  address: z.string().optional(),
+  is_main_address: z.boolean().default(false),
+  description: z.string().optional(),
+  meta_description: z.string().max(160, "Meta description should be 160 characters or less").optional(),
+  hero_image: z.string().optional(),
+})
 
-type ServiceAreaFormValues = z.infer<typeof serviceAreaSchema>;
+type ServiceAreaFormValues = z.infer<typeof serviceAreaSchema>
 
-const ServiceAreaEditor: React.FC = () => {
-  const [loading, setLoading] = useState(false);
-  const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+interface ServiceArea {
+  id: string
+  name: string
+  address?: string
+  is_main_address: boolean
+  description?: string
+  meta_description?: string
+  hero_image?: string
+}
 
-  const { 
-    register, 
-    control, 
-    handleSubmit, 
-    reset, 
-    watch,
-    formState: { errors } 
+const ServiceAreaEditor = () => {
+  const [serviceAreas, setServiceAreas] = useState<ServiceArea[]>([])
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [richContent, setRichContent] = useState("")
+  const [notification, setNotification] = useState<{ type: "success" | "error"; message: string } | null>(null)
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    control,
+    setValue,
+    formState: { errors },
   } = useForm<ServiceAreaFormValues>({
     resolver: zodResolver(serviceAreaSchema),
     defaultValues: {
-      mainAddress: '',
-      areas: [{ name: '' }]
-    }
-  });
+      name: "",
+      address: "",
+      is_main_address: false,
+      description: "",
+      meta_description: "",
+      hero_image: "",
+    },
+  })
 
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "areas"
-  });
-
-  const mainAddress = watch('mainAddress');
-
-  // Function to create a Google Maps embed URL for an address
-  const getMapPreviewUrl = (address: string) => {
-    return `https://www.google.com/maps?q=${encodeURIComponent(address)}&output=embed`;
-  };
-
+  // Fetch service areas
   useEffect(() => {
-    const fetchServiceAreaData = async () => {
-      setLoading(true);
+    const fetchServiceAreas = async () => {
       try {
-        // Get all service areas
-        const { data: areasData, error: areasError } = await supabase
-          .from('service_areas')
-          .select('*')
-          .order('id', { ascending: true });
+        setLoading(true)
+        const { data, error } = await supabase.from("service_areas").select("*").order("name", { ascending: true })
 
-        if (areasError) throw areasError;
-
-        // Find the main address (we'll mark it with is_main_address=true in the updated schema)
-        const mainAddressRecord = areasData?.find(area => area.is_main_address === true);
-        
-        // Set form data
-        reset({
-          mainAddress: mainAddressRecord?.address || '',
-          areas: areasData?.filter(area => !area.is_main_address).map(area => ({ 
-            name: area.name,
-            id: area.id
-          })) || [{ name: '' }]
-        });
-      } catch (error) {
-        console.error('Error fetching service area data:', error);
-        setSaveMessage({ type: 'error', text: 'Failed to load service area data' });
+        if (error) throw error
+        setServiceAreas(data || [])
+      } catch (err) {
+        console.error("Error fetching service areas:", err)
+        showNotification("error", "Failed to load service areas")
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
-
-    fetchServiceAreaData();
-  }, [reset]);
-
-  const onSubmit = async (data: ServiceAreaFormValues) => {
-    setLoading(true);
-    setSaveMessage(null);
-    
-    try {
-      // Start a transaction using Supabase's RPC
-      const { error: deleteMainError } = await supabase
-        .from('service_areas')
-        .delete()
-        .eq('is_main_address', true);
-
-      if (deleteMainError) throw deleteMainError;
-
-      // Insert the main address record
-      const { error: insertMainError } = await supabase
-        .from('service_areas')
-        .insert({
-          name: 'Main Address',
-          address: data.mainAddress,
-          is_main_address: true
-        });
-
-      if (insertMainError) throw insertMainError;
-
-      // Delete and re-insert service areas
-      const { error: deleteError } = await supabase
-        .from('service_areas')
-        .delete()
-        .eq('is_main_address', false);
-
-      if (deleteError) throw deleteError;
-
-      const { error: insertError } = await supabase
-        .from('service_areas')
-        .insert(data.areas.map(area => ({ 
-          name: area.name,
-          is_main_address: false
-        })));
-
-      if (insertError) throw insertError;
-
-      setSaveMessage({ type: 'success', text: 'Service areas saved successfully!' });
-    } catch (error) {
-      console.error('Error saving service area data:', error);
-      setSaveMessage({ type: 'error', text: 'Failed to save service area data' });
-    } finally {
-      setLoading(false);
     }
-  };
+
+    fetchServiceAreas()
+  }, [])
+
+  // Show notification
+  const showNotification = (type: "success" | "error", message: string) => {
+    setNotification({ type, message })
+    setTimeout(() => setNotification(null), 5000)
+  }
+
+  // Handle edit service area
+  const handleEdit = (area: ServiceArea) => {
+    setEditingId(area.id)
+    reset({
+      name: area.name,
+      address: area.address || "",
+      is_main_address: area.is_main_address,
+      description: area.description || "",
+      meta_description: area.meta_description || "",
+      hero_image: area.hero_image || "",
+    })
+    setRichContent(area.description || "")
+  }
+
+  // Handle new service area
+  const handleNew = () => {
+    setEditingId(null)
+    reset({
+      name: "",
+      address: "",
+      is_main_address: false,
+      description: "",
+      meta_description: "",
+      hero_image: "",
+    })
+    setRichContent("")
+  }
+
+  // Handle cancel
+  const handleCancel = () => {
+    setEditingId(null)
+    reset()
+    setRichContent("")
+  }
+
+  // Handle delete
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this service area?")) {
+      return
+    }
+
+    try {
+      setLoading(true)
+      const { error } = await supabase.from("service_areas").delete().eq("id", id)
+
+      if (error) throw error
+
+      setServiceAreas(serviceAreas.filter((area) => area.id !== id))
+      showNotification("success", "Service area deleted successfully")
+    } catch (err) {
+      console.error("Error deleting service area:", err)
+      showNotification("error", "Failed to delete service area")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Handle form submission
+  const onSubmit = async (data: ServiceAreaFormValues) => {
+    try {
+      setSaving(true)
+
+      // Include the rich text content
+      const formData = {
+        ...data,
+        description: richContent,
+      }
+
+      let result
+
+      if (editingId) {
+        // Update existing service area
+        result = await supabase.from("service_areas").update(formData).eq("id", editingId)
+      } else {
+        // Create new service area
+        result = await supabase.from("service_areas").insert([formData]).select()
+      }
+
+      if (result.error) throw result.error
+
+      // Refresh the service areas list
+      const { data: refreshedData, error: refreshError } = await supabase
+        .from("service_areas")
+        .select("*")
+        .order("name", { ascending: true })
+
+      if (refreshError) throw refreshError
+
+      setServiceAreas(refreshedData || [])
+      showNotification("success", editingId ? "Service area updated successfully" : "Service area created successfully")
+
+      // Reset form
+      handleCancel()
+    } catch (err) {
+      console.error("Error saving service area:", err)
+      showNotification("error", "Failed to save service area")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  // Handle image upload
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      if (!e.target.files || e.target.files.length === 0) {
+        return
+      }
+
+      const file = e.target.files[0]
+      const fileExt = file.name.split(".").pop()
+      const fileName = `service-area-${Date.now()}.${fileExt}`
+      const filePath = `service-areas/${fileName}`
+
+      setLoading(true)
+
+      // Upload file to storage
+      const { error: uploadError } = await supabase.storage.from("assets").upload(filePath, file)
+
+      if (uploadError) {
+        throw uploadError
+      }
+
+      // Get public URL
+      const { data } = supabase.storage.from("assets").getPublicUrl(filePath)
+
+      setValue("hero_image", data.publicUrl)
+      showNotification("success", "Image uploaded successfully")
+    } catch (error) {
+      console.error("Error uploading image:", error)
+      showNotification("error", "Failed to upload image")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">Service Area Settings</h2>
-      
-      <form onSubmit={handleSubmit(onSubmit)}>
-        {/* Main Address */}
-        <div className="mb-6">
-          <label className="block text-gray-700 font-medium mb-2">
-            Main Service Address
-            <span className="text-xs text-gray-500 ml-2">(This will be used for the map)</span>
-          </label>
-          <div className="flex gap-2">
-            <div className="flex-grow">
-              <input
-                type="text"
-                className={`input input-bordered w-full ${errors.mainAddress ? 'input-error' : ''}`}
-                placeholder="Owen Sound, ON"
-                {...register("mainAddress")}
-              />
-              {errors.mainAddress && (
-                <p className="text-red-500 text-sm mt-1">{errors.mainAddress.message}</p>
+    <div className="p-6 bg-white rounded-lg shadow">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-[#152f59]">Service Areas</h2>
+        <button onClick={handleNew} className="btn btn-primary bg-[#7ac144] hover:bg-[#6aad39] border-none">
+          Add New Area
+        </button>
+      </div>
+
+      {notification && (
+        <div className={`alert ${notification.type === "success" ? "alert-success" : "alert-error"} mb-6`}>
+          <div>
+            <span>{notification.message}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Form */}
+      {(editingId !== null || (editingId === null && richContent !== "")) && (
+        <div className="bg-gray-50 p-6 rounded-lg mb-6 border border-gray-200">
+          <h3 className="text-xl font-semibold mb-4">{editingId ? "Edit Service Area" : "Add New Service Area"}</h3>
+
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-medium">Area Name *</span>
+                </label>
+                <input
+                  type="text"
+                  {...register("name")}
+                  className={`input input-bordered w-full ${errors.name ? "input-error" : ""}`}
+                  placeholder="e.g., Collingwood"
+                />
+                {errors.name && (
+                  <label className="label">
+                    <span className="label-text-alt text-error">{errors.name.message}</span>
+                  </label>
+                )}
+              </div>
+
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-medium">Address</span>
+                </label>
+                <input
+                  type="text"
+                  {...register("address")}
+                  className="input input-bordered w-full"
+                  placeholder="e.g., 123 Main St, Collingwood, ON"
+                />
+              </div>
+            </div>
+
+            <div className="form-control mb-4">
+              <label className="label cursor-pointer justify-start">
+                <input type="checkbox" {...register("is_main_address")} className="checkbox mr-2" />
+                <span className="label-text">This is the main address</span>
+              </label>
+            </div>
+
+            <div className="form-control mb-4">
+              <label className="label">
+                <span className="label-text font-medium">Meta Description</span>
+                <span className="label-text-alt">Max 160 characters</span>
+              </label>
+              <textarea
+                {...register("meta_description")}
+                className={`textarea textarea-bordered w-full h-20 ${errors.meta_description ? "textarea-error" : ""}`}
+                placeholder="Brief description for search engines"
+              ></textarea>
+              {errors.meta_description && (
+                <label className="label">
+                  <span className="label-text-alt text-error">{errors.meta_description.message}</span>
+                </label>
               )}
             </div>
-          </div>
-        </div>
 
-        {/* Map Preview */}
-        <div className="mb-6">
-          <h3 className="text-lg font-medium text-gray-700 mb-2">Map Preview</h3>
-          <div className="border rounded-lg overflow-hidden h-64">
-            {mainAddress ? (
-              <iframe
-                title="Service Area Map"
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                src={getMapPreviewUrl(mainAddress)}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
-            ) : (
-              <div className="flex items-center justify-center h-full bg-gray-100 text-gray-500">
-                <div className="text-center">
-                  <FiMapPin className="mx-auto text-3xl mb-2" />
-                  <p>Enter an address above to see the map preview</p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Service Areas List */}
-        <div className="mb-6">
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="text-lg font-medium text-gray-700">Service Areas</h3>
-            <button
-              type="button"
-              className="btn btn-sm btn-primary"
-              onClick={() => append({ name: '' })}
-            >
-              <FiPlus className="mr-1" /> Add Area
-            </button>
-          </div>
-          
-          {errors.areas?.root && (
-            <p className="text-red-500 text-sm mb-2">{errors.areas.root.message}</p>
-          )}
-          
-          <div className="bg-gray-50 rounded-lg p-4">
-            {fields.map((field, index) => (
-              <div key={field.id} className="flex items-center gap-2 mb-2">
-                <div className="flex-grow">
-                  <input
-                    type="text"
-                    className={`input input-bordered w-full ${errors.areas?.[index]?.name ? 'input-error' : ''}`}
-                    placeholder="Area name (e.g. Owen Sound)"
-                    {...register(`areas.${index}.name`)}
-                  />
-                  {errors.areas?.[index]?.name && (
-                    <p className="text-red-500 text-sm mt-1">{errors.areas?.[index]?.name?.message}</p>
+            <div className="form-control mb-4">
+              <label className="label">
+                <span className="label-text font-medium">Hero Image</span>
+              </label>
+              <div className="flex items-center space-x-4">
+                <Controller
+                  name="hero_image"
+                  control={control}
+                  render={({ field }) => (
+                    <>
+                      <input
+                        {...field}
+                        type="text"
+                        className="input input-bordered w-full"
+                        placeholder="Image URL"
+                        readOnly
+                      />
+                      {field.value && (
+                        <div className="avatar">
+                          <div className="w-12 h-12 rounded">
+                            <img src={field.value || "/placeholder.svg"} alt="Preview" />
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
-                </div>
-                <button
-                  type="button"
-                  className="btn btn-sm btn-outline btn-error"
-                  onClick={() => fields.length > 1 && remove(index)}
-                  disabled={fields.length <= 1}
-                >
-                  <FiTrash2 />
-                </button>
+                />
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="file-input file-input-bordered"
+                />
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
 
-        {/* Save Button */}
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            className="btn btn-primary"
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <span className="loading loading-spinner loading-sm mr-2"></span>
-                Saving...
-              </>
+            <div className="form-control mb-6">
+              <label className="label">
+                <span className="label-text font-medium">Area Description</span>
+              </label>
+              <TipTap initialContent={richContent} onSave={setRichContent} editorHeight="min-h-[300px]" />
+            </div>
+
+            <div className="flex justify-end space-x-2">
+              <button type="button" onClick={handleCancel} className="btn btn-ghost">
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="btn btn-primary bg-[#7ac144] hover:bg-[#6aad39] border-none"
+                disabled={saving}
+              >
+                {saving ? (
+                  <>
+                    <span className="loading loading-spinner loading-sm"></span>
+                    Saving...
+                  </>
+                ) : (
+                  "Save Service Area"
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Service Areas Table */}
+      <div className="overflow-x-auto">
+        <table className="table w-full">
+          <thead>
+            <tr>
+              <th>Area Name</th>
+              <th>Address</th>
+              <th>Main Address</th>
+              <th>Has Description</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading && serviceAreas.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="text-center py-4">
+                  <span className="loading loading-spinner loading-md"></span>
+                </td>
+              </tr>
+            ) : serviceAreas.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="text-center py-4 text-gray-500">
+                  No service areas found. Add your first service area using the button above.
+                </td>
+              </tr>
             ) : (
-              <>
-                <FiSave className="mr-2" /> Save Service Areas
-              </>
+              serviceAreas.map((area) => (
+                <tr key={area.id}>
+                  <td>{area.name}</td>
+                  <td>{area.address || "—"}</td>
+                  <td>
+                    {area.is_main_address ? (
+                      <span className="badge badge-success">Yes</span>
+                    ) : (
+                      <span className="badge badge-ghost">No</span>
+                    )}
+                  </td>
+                  <td>
+                    {area.description ? (
+                      <span className="badge badge-info">Yes</span>
+                    ) : (
+                      <span className="badge badge-ghost">No</span>
+                    )}
+                  </td>
+                  <td>
+                    <div className="flex space-x-2">
+                      <button onClick={() => handleEdit(area)} className="btn btn-sm btn-outline">
+                        Edit
+                      </button>
+                      <button onClick={() => handleDelete(area.id)} className="btn btn-sm btn-error btn-outline">
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
             )}
-          </button>
-        </div>
+          </tbody>
+        </table>
+      </div>
 
-        {/* Save Message */}
-        {saveMessage && (
-          <div className={`mt-4 p-3 rounded-lg ${
-            saveMessage.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-          }`}>
-            {saveMessage.text}
-          </div>
-        )}
-      </form>
+      {/* SEO Tips */}
+      <div className="mt-8 bg-blue-50 p-4 rounded-lg border border-blue-200">
+        <h3 className="text-lg font-semibold text-blue-800 mb-2">SEO Tips for Service Areas</h3>
+        <ul className="list-disc list-inside space-y-2 text-blue-900">
+          <li>Include the area name in the meta description</li>
+          <li>Add relevant keywords like "plumbing services in [area name]"</li>
+          <li>Keep meta descriptions between 120-160 characters</li>
+          <li>Use descriptive, keyword-rich content in the area description</li>
+          <li>Add high-quality, relevant images with descriptive file names</li>
+        </ul>
+      </div>
     </div>
-  );
-};
+  )
+}
 
-export default ServiceAreaEditor;
+export default ServiceAreaEditor
+

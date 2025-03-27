@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
+import { Link } from 'react-router-dom';
 
 interface ServiceArea {
   id: number;
@@ -123,6 +124,9 @@ const ServiceAreaMap: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
+        <div className="flex justify-center w-full mt-8">
+          <Link to='service-areas' className="btn btn-primary bg-[#152f59]">View All Service Areas</Link>
         </div>
       </div>
     </div>

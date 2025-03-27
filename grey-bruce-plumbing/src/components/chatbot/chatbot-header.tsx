@@ -6,12 +6,12 @@ export function ChatbotHeader() {
   const { minimizeChatbot, resetConversation } = useChatbot()
 
   return (
-    <div className="bg-primary text-white p-4 rounded-t-lg flex justify-between items-center">
+    <div className="bg-[#152f59] text-white p-4 rounded-t-lg flex justify-between items-center">
       <div className="flex items-center">
         <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center mr-2">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 text-primary"
+            className="h-5 w-5 text-[#152f59]"
             viewBox="0 0 20 20"
             fill="currentColor"
           >

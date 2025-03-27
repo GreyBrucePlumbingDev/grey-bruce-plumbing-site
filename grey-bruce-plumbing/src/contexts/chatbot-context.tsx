@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { createContext, useContext, useState, useEffect, useCallback } from "react"
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react"
 import { v4 as uuidv4 } from "uuid"
 import { DialogflowService } from "../services/dialogflow-service"
 import type { ChatMessage } from "../types"
@@ -18,6 +18,7 @@ interface ChatbotContextType {
 
 const ChatbotContext = createContext<ChatbotContextType | undefined>(undefined)
 
+// Optimize the chatbot context to prevent unnecessary re-renders
 export const ChatbotProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isOpen, setIsOpen] = useState(false)
@@ -66,7 +67,7 @@ export const ChatbotProvider: React.FC<{ children: React.ReactNode }> = ({ child
     handleWelcome()
   }, [isOpen])
 
-  // Send message to Dialogflow
+  // Optimize the sendMessage function to handle loading state better
   const sendMessage = useCallback(
     async (text: string) => {
       if (!text.trim()) return
@@ -79,6 +80,7 @@ export const ChatbotProvider: React.FC<{ children: React.ReactNode }> = ({ child
         timestamp: new Date(),
       }
 
+      // Update messages with user message first for immediate feedback
       setMessages((prev) => [...prev, userMessage])
       setIsLoading(true)
 
@@ -94,6 +96,7 @@ export const ChatbotProvider: React.FC<{ children: React.ReactNode }> = ({ child
           timestamp: new Date(),
         }
 
+        // Update messages with bot response
         setMessages((prev) => [...prev, botMessage])
       } catch (error) {
         console.error("Error sending message:", error)
@@ -119,45 +122,37 @@ export const ChatbotProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setIsOpen((prev) => !prev)
   }, [])
 
-  // Reset conversation
+  // Also update the resetConversation function to use the same pattern
   const resetConversation = useCallback(() => {
     const newSessionId = uuidv4()
     setSessionId(newSessionId)
     setMessages([])
+    setIsLoading(true)
 
     // Send welcome event
-    const handleWelcome = async () => {
-      setIsLoading(true)
-      try {
-        const response = await DialogflowService.sendEvent("WELCOME", newSessionId)
-
-        // Add bot message
+    DialogflowService.sendEvent("WELCOME", newSessionId)
+      .then((response) => {
         const botMessage: ChatMessage = {
           id: uuidv4(),
           text: response.fulfillmentText,
           sender: "bot",
           timestamp: new Date(),
         }
-
         setMessages([botMessage])
-      } catch (error) {
+      })
+      .catch((error) => {
         console.error("Error sending welcome event:", error)
-
-        // Add fallback message
         const fallbackMessage: ChatMessage = {
           id: uuidv4(),
           text: "Welcome to Grey-Bruce Plumbing! How can I help you today?",
           sender: "bot",
           timestamp: new Date(),
         }
-
         setMessages([fallbackMessage])
-      } finally {
+      })
+      .finally(() => {
         setIsLoading(false)
-      }
-    }
-
-    handleWelcome()
+      })
   }, [])
 
   // Minimize chatbot
@@ -165,21 +160,21 @@ export const ChatbotProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setIsOpen(false)
   }, [])
 
-  return (
-    <ChatbotContext.Provider
-      value={{
-        messages,
-        isOpen,
-        isLoading,
-        sendMessage,
-        toggleChatbot,
-        resetConversation,
-        minimizeChatbot,
-      }}
-    >
-      {children}
-    </ChatbotContext.Provider>
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(
+    () => ({
+      messages,
+      isOpen,
+      isLoading,
+      sendMessage,
+      toggleChatbot,
+      resetConversation,
+      minimizeChatbot,
+    }),
+    [messages, isOpen, isLoading, sendMessage, toggleChatbot, resetConversation, minimizeChatbot],
   )
+
+  return <ChatbotContext.Provider value={contextValue}>{children}</ChatbotContext.Provider>
 }
 
 export const useChatbot = () => {

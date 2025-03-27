@@ -6,15 +6,41 @@ import { useState, useRef, useEffect } from "react"
 import { useChatbot } from "../../contexts/chatbot-context"
 import { MessageBubble } from "./message-bubble"
 
+// Completely revamp the ChatInterface component to fix scrolling issues
 export const ChatInterface: React.FC = () => {
-  const { messages, isLoading, sendMessage, resetConversation } = useChatbot()
+  const { messages, isLoading, sendMessage, resetConversation, isOpen } = useChatbot()
   const [input, setInput] = useState("")
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const [prevMessagesLength, setPrevMessagesLength] = useState(0)
 
-  // Scroll to bottom when messages change
+  // Improved scroll handling that maintains position when new messages are added
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages])
+    if (messages.length > prevMessagesLength) {
+      // Only auto-scroll when new messages are added
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    }
+    setPrevMessagesLength(messages.length)
+  }, [messages, prevMessagesLength])
+
+  // Auto-focus input field when chat is opened or after sending a message
+  useEffect(() => {
+    // Focus when messages change (after sending a message)
+    if (!isLoading && inputRef.current) {
+      inputRef.current.focus()
+    }
+  }, [messages, isLoading])
+
+  // Focus input when chat is opened
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      // Small timeout to ensure the chat is fully rendered
+      setTimeout(() => {
+        inputRef.current?.focus()
+      }, 100)
+    }
+  }, [isOpen])
 
   // Update the form submission handler
   const handleSubmit = (e: React.FormEvent) => {
@@ -22,31 +48,57 @@ export const ChatInterface: React.FC = () => {
     if (input.trim() && !isLoading) {
       sendMessage(input)
       setInput("")
+      // Focus will be handled by the useEffect that watches messages
     }
   }
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div
+        ref={messagesContainerRef}
+        className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent"
+      >
         {messages.map((message) => (
           <MessageBubble key={message.id} message={message} />
         ))}
+
+        {/* Message-specific loading indicator */}
         {isLoading && (
-          <div className="flex justify-center items-center py-2">
-            <span className="loading loading-spinner loading-md text-[#152f59]"></span>
+          <div className="flex justify-start">
+            <div className="max-w-[80%] rounded-lg px-4 py-3 bg-gray-100 text-black shadow-sm">
+              <div className="flex items-center space-x-2">
+                <div className="flex space-x-1">
+                  <div
+                    className="w-2 h-2 rounded-full bg-[#152f59] animate-bounce"
+                    style={{ animationDelay: "0ms" }}
+                  ></div>
+                  <div
+                    className="w-2 h-2 rounded-full bg-[#152f59] animate-bounce"
+                    style={{ animationDelay: "300ms" }}
+                  ></div>
+                  <div
+                    className="w-2 h-2 rounded-full bg-[#152f59] animate-bounce"
+                    style={{ animationDelay: "600ms" }}
+                  ></div>
+                </div>
+                <span className="text-sm text-gray-500">Grey-Bruce Plumbing is typing...</span>
+              </div>
+            </div>
           </div>
         )}
+
         <div ref={messagesEndRef} />
       </div>
 
       {/* Input form */}
       <form onSubmit={handleSubmit} className="border-t p-4 flex gap-2">
         <input
+          ref={inputRef}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Type your message..."
           disabled={isLoading}
-          className="input input-bordered w-full focus:outline-[#7ac144] chatbot-input"
+          className="input input-bordered w-full focus:outline-none focus:border-[#152f59] focus:ring-1 focus:ring-[#152f59]"
         />
         <button
           type="submit"

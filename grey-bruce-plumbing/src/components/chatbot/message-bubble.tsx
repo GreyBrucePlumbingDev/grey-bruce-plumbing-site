@@ -14,7 +14,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
     const urlRegex = /(https?:\/\/[^\s]+)/g
     const textWithLinks = text.replace(
       urlRegex,
-      (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-[#7ac144] underline">${url}</a>`,
+      (url) =>
+        `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-[#7ac144] underline break-words">${url}</a>`,
     )
 
     // Replace phone numbers with clickable links
@@ -34,6 +35,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
     "rounded-lg",
     "px-4",
     "py-2",
+    "break-words",
+    "shadow-sm",
     isUser ? "bg-[#152f59] text-white" : "bg-gray-100 text-black",
   ].join(" ")
 
@@ -42,9 +45,12 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
       <div className={messageBubbleClasses}>
         {/* Message text with formatted content */}
         {isUser ? (
-          <div className="whitespace-pre-wrap">{message.text}</div>
+          <div className="whitespace-pre-wrap break-words">{message.text}</div>
         ) : (
-          <div className="whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: formatMessageText(message.text) }} />
+          <div
+            className="whitespace-pre-wrap break-words"
+            dangerouslySetInnerHTML={{ __html: formatMessageText(message.text) }}
+          />
         )}
 
         {/* Timestamp */}
