@@ -196,7 +196,7 @@ const BlogPage = () => {
                         </div>
                     )}
                     <h2 className="card-title text-2xl text-[#152f59] hover:text-[#7ac144] transition-colors">
-                        <Link to={`/blog/${blog.slug}`}>
+                        <Link to={`/blogs/${blog.slug}`}>
                         {blog.title}
                         </Link>
                     </h2>
@@ -204,7 +204,7 @@ const BlogPage = () => {
                     <p className="text-gray-700">{blog.excerpt}</p>
                     <div className="card-actions justify-end mt-4">
                         <Link 
-                        to={`/blog/${blog.slug}`} 
+                        to={`/blogs/${blog.slug}`} 
                         className="btn bg-[#152f59] hover:bg-[#0e1f3a] text-white border-none"
                         >
                         Read More

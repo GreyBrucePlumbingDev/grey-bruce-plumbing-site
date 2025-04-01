@@ -95,24 +95,7 @@ const ContactUs: React.FC = () => {
             </address>
           </div>
         </div>
-        
-        {/* Quick Form Preview */}
-        <div className="bg-white rounded-lg shadow-md p-8 max-w-3xl mx-auto mb-12">
-          <h3 className="text-2xl font-bold text-[#152f59] mb-6 text-center">
-            Send Us a Quick Message
-          </h3>
-          <div className="text-center">
-            <p className="text-gray-600 mb-6">
-              Need an estimate or have a question? We'll get back to you ASAP.
-            </p>
-            <a 
-              href={settings?.booking_link || "/contact"} 
-              className="px-6 py-3 bg-[#152f59] hover:bg-[#0e1f3a] text-white font-medium rounded-lg transition-colors duration-300"
-            >
-              Go to Contact Form
-            </a>
-          </div>
-        </div>
+      
         
       </div>
     </div>

@@ -122,7 +122,7 @@ const EmergencyCallout: React.FC = () => {
         {/* Book now button */}
         <div className="flex justify-center">
           <Link 
-            to="/booking" 
+            to={settings?.booking_link || "#"} 
             className="px-8 py-4 bg-[#7ac144] hover:bg-[#69a83a] text-white font-bold text-lg rounded-lg transition-colors duration-300 shadow-md"
           >
             Book Now
