@@ -15,7 +15,7 @@ export function ChatbotContainer() {
 
   // Calculate dynamic dimensions based on screen size
   const getDynamicDimensions = () => {
-    if (!windowSize.width) return { width: 380, height: 500 }
+    if (!windowSize.width || !windowSize.height) return { width: 380, height: 500 }
 
     // Base dimensions
     let width = 380
