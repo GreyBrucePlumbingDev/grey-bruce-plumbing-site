@@ -22,19 +22,19 @@ export function ChatbotContainer() {
     let height = 500
 
     // Adjust for mobile
-    if (windowSize.width < 640) {
-      width = Math.min(windowSize.width - 32, 380) // 16px padding on each side
-      height = Math.min(windowSize.height * 0.7, 500)
+    if (windowSize?.width < 640) {
+      width = Math.min(windowSize?.width - 32, 380) // 16px padding on each side
+      height = Math.min(windowSize?.height * 0.7, 500)
     }
     // Adjust for tablets
-    else if (windowSize.width < 1024) {
+    else if (windowSize?.width < 1024) {
       width = 380
-      height = Math.min(windowSize.height * 0.7, 550)
+      height = Math.min(windowSize?.height * 0.7, 550)
     }
     // Adjust for larger screens
     else {
       width = 420
-      height = Math.min(windowSize.height * 0.7, 600)
+      height = Math.min(windowSize?.height * 0.7, 600)
     }
 
     return { width, height }

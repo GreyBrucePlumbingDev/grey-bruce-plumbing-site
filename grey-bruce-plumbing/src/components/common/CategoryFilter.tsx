@@ -10,7 +10,7 @@ interface ServiceCardProps {
   category?: string
 }
 
-const ServiceCard: React.FC<ServiceCardProps> = ({ id, title, description, slug, icon, category }) => {
+const ServiceCard: React.FC<ServiceCardProps> = ({ title, description, slug, icon, category }) => {
   return (
     <Link
       to={`/services/${slug}`}

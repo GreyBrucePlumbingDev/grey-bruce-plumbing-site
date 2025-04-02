@@ -202,7 +202,7 @@ const PopularServices: React.FC = () => {
     const halfVisible = isMobile ? 0 : 0.5
 
     // Calculate which indices to show
-    const indices = []
+    const indices: number[] = []
     const totalVisible = Math.floor(visibleCount + halfVisible * 2)
     const halfTotal = Math.floor(totalVisible / 2)
 
