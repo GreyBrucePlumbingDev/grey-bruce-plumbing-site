@@ -109,9 +109,9 @@ const ServiceAreaIndex = () => {
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-[#152f59] to-[#25477e] text-white py-16">
         <Container>
-          <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">Our Service Areas</h1>
-            <p className="text-xl max-w-3xl mx-auto mb-8">
+          <div className="text-center ">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 !text-white">Our Service Areas</h1>
+            <p className="text-xl max-w-3xl mx-auto mb-8 !text-white">
               Professional plumbing services available in the following locations. Click on your area to learn more.
             </p>
           </div>

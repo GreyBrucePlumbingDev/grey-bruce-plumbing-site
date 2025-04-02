@@ -54,9 +54,6 @@ const ServiceAreaMap: React.FC = () => {
   return (
     <div id="serviceArea" className="py-16 bg-gray-50">
       <div className="container mx-auto px-4">
-        <h2 className="text-4xl font-bold text-center text-[#152f59] mb-12">
-          Our Service Area
-        </h2>
         
         <div className="flex flex-col lg:flex-row gap-8 max-w-6xl mx-auto">
           {/* Map Section - Left side */}
@@ -122,11 +119,11 @@ const ServiceAreaMap: React.FC = () => {
                   Contact us to check if we service your area.
                 </p>
               </div>
+              <div className="flex justify-center w-full mt-8">
+                <Link to='service-areas' className="btn btn-primary bg-[#152f59]">View All Service Areas</Link>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="flex justify-center w-full mt-8">
-          <Link to='service-areas' className="btn btn-primary bg-[#152f59]">View All Service Areas</Link>
         </div>
       </div>
     </div>

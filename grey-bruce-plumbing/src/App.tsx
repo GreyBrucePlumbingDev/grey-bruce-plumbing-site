@@ -14,6 +14,7 @@ import BlogPostPage from "./pages/BlogPost"
 import ServiceAreaLanding from "./components/ServiceAreaLanding"
 import ServiceAreaIndex from "./components/ServiceAreaIndex"
 import DomainRedirector from "./components/DomainRedirector"
+import ServicesPage from "./pages/ServicesPage"
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
             <Route path="about" element={<AboutPage />} />
 
             {/* Service pages with dynamic routing */}
+            <Route path="services" element={<ServicesPage />} />
             <Route path="services/:serviceSlug" element={<ServicePage />} />
 
             {/* Service Area pages */}

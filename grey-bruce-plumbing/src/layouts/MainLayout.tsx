@@ -1,4 +1,3 @@
-// src/layouts/MainLayout.tsx
 import { Outlet } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -9,13 +8,12 @@ const MainLayout = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
-      <main className="flex-grow">
+      <main className="flex-grow w-full">
         <Outlet />
       </main>
       <ChatbotProvider>
         <ChatbotContainer />
       </ChatbotProvider>
-      
       <Footer />
     </div>
   );

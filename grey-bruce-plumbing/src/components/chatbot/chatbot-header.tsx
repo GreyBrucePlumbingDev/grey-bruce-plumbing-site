@@ -6,7 +6,7 @@ export function ChatbotHeader() {
   const { minimizeChatbot, resetConversation } = useChatbot()
 
   return (
-    <div className="bg-[#152f59] text-white p-4 rounded-t-lg flex justify-between items-center">
+    <div className="bg-[#152f59] text-white p-4 rounded-t-lg flex justify-between items-center w-full sticky top-0 z-20">
       <div className="flex items-center">
         <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center mr-2">
           <svg

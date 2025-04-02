@@ -3,9 +3,10 @@ import type { ChatMessage } from "../../types"
 
 interface MessageBubbleProps {
   message: ChatMessage
+  isLastInGroup?: boolean
 }
 
-export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
+export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, isLastInGroup = false }) => {
   const isUser = message.sender === "user"
 
   // Format message text with links and line breaks
@@ -38,6 +39,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
     "break-words",
     "shadow-sm",
     isUser ? "bg-[#152f59] text-white" : "bg-gray-100 text-black",
+    isLastInGroup ? "mb-3" : "mb-1", // Add more margin to the last message in a group
   ].join(" ")
 
   return (
@@ -45,10 +47,10 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
       <div className={messageBubbleClasses}>
         {/* Message text with formatted content */}
         {isUser ? (
-          <div className="whitespace-pre-wrap break-words">{message.text}</div>
+          <div className="whitespace-pre-wrap break-words text-sm md:text-base">{message.text}</div>
         ) : (
           <div
-            className="whitespace-pre-wrap break-words"
+            className="whitespace-pre-wrap break-words text-sm md:text-base"
             dangerouslySetInnerHTML={{ __html: formatMessageText(message.text) }}
           />
         )}

@@ -110,8 +110,8 @@ const ServiceAreaLanding = () => {
       <div className="bg-gradient-to-r from-[#152f59] to-[#25477e] text-white py-16">
         <Container>
           <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">Trusted Plumbing Services in {formattedAreaName}</h1>
-            <p className="text-xl max-w-3xl mx-auto mb-8">
+            <h1 className="!text-white text-4xl md:text-5xl font-bold mb-4">Trusted Plumbing Services in {formattedAreaName}</h1>
+            <p className="!text-white text-xl max-w-3xl mx-auto mb-8">
               Professional plumbing solutions for residential and commercial properties with 24/7 emergency service.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
@@ -261,8 +261,8 @@ const ServiceAreaLanding = () => {
 
               {/* CTA Section */}
               <div className="bg-[#152f59] text-white p-6 rounded-lg text-center">
-                <h3 className="text-2xl font-bold mb-4">Ready to Solve Your Plumbing Problems?</h3>
-                <p className="mb-6">Contact us today for fast, reliable plumbing services in {formattedAreaName}.</p>
+                <h3 className="!text-white text-2xl font-bold mb-4">Ready to Solve Your Plumbing Problems?</h3>
+                <p className="!text-white mb-6">Contact us today for fast, reliable plumbing services in {formattedAreaName}.</p>
                 <div className="flex flex-col sm:flex-row justify-center gap-4">
                   <a
                     href={settings?.booking_link || "#"}

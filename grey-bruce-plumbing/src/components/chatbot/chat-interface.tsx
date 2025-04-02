@@ -1,13 +1,16 @@
 "use client"
 
-// Simplify the ChatInterface component
 import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import { useChatbot } from "../../contexts/chatbot-context"
 import { MessageBubble } from "./message-bubble"
 
+interface ChatInterfaceProps {
+  maxHeight?: number
+}
+
 // Completely revamp the ChatInterface component to fix scrolling issues
-export const ChatInterface: React.FC = () => {
+export const ChatInterface: React.FC<ChatInterfaceProps> = ({ maxHeight }) => {
   const { messages, isLoading, sendMessage, resetConversation, isOpen } = useChatbot()
   const [input, setInput] = useState("")
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -57,9 +60,16 @@ export const ChatInterface: React.FC = () => {
       <div
         ref={messagesContainerRef}
         className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent"
+        style={{ maxHeight: maxHeight ? `${maxHeight}px` : "calc(100% - 72px)" }}
       >
-        {messages.map((message) => (
-          <MessageBubble key={message.id} message={message} />
+        <div className="h-2"></div>
+
+        {messages.map((message, index) => (
+          <MessageBubble
+            key={message.id}
+            message={message}
+            isLastInGroup={index === messages.length - 1 || messages[index + 1]?.sender !== message.sender}
+          />
         ))}
 
         {/* Message-specific loading indicator */}
@@ -91,7 +101,7 @@ export const ChatInterface: React.FC = () => {
       </div>
 
       {/* Input form */}
-      <form onSubmit={handleSubmit} className="border-t p-4 flex gap-2">
+      <form onSubmit={handleSubmit} className="border-t p-4 flex gap-2 bg-white sticky bottom-0 z-10">
         <input
           ref={inputRef}
           value={input}
